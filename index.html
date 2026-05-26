@@ -35,10 +35,9 @@
   #mkt-status.closed{color:var(--text3);border-color:var(--border);background:transparent;}
   #mkt-status.pre{color:var(--yellow);border-color:#f59e0b44;background:#f59e0b0a;}
   #toolbar{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:10px;flex-shrink:0;}
-  .tf-group{display:flex;gap:1px;}
-  .tf-btn{background:transparent;border:none;color:var(--text3);font-family:var(--mono);font-size:10px;font-weight:500;padding:3px 7px;cursor:pointer;border-radius:3px;transition:background .1s,color .1s;letter-spacing:.02em;}
-  .tf-btn:hover{background:var(--bg4);color:var(--text2);}
-  .tf-btn.active{background:var(--accent);color:#fff;}
+  #tf-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 22px 3px 8px;border-radius:3px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7a99' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;min-width:80px;}
+  #tf-select:hover{border-color:var(--accent);color:var(--text);}
+  #tf-select option{background:var(--bg3);color:var(--text);padding:4px 8px;}
   .tdiv{width:1px;height:14px;background:var(--border2);}
   .ind-group{display:flex;gap:2px;align-items:center;}
   .ind-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);margin-right:2px;text-transform:uppercase;letter-spacing:.06em;}
@@ -98,14 +97,18 @@
     </div>
   </div>
   <div id="toolbar">
-    <div class="tf-group">
-      <button class="tf-btn" onclick="setTF('1')">1m</button>
-      <button class="tf-btn" onclick="setTF('5')">5m</button>
-      <button class="tf-btn" onclick="setTF('15')">15m</button>
-      <button class="tf-btn active" onclick="setTF('60')">1h</button>
-      <button class="tf-btn" onclick="setTF('D')">1D</button>
-      <button class="tf-btn" onclick="setTF('W')">1W</button>
-    </div>
+    <select id="tf-select" onchange="setTF(this.value)">
+      <option value="1">1m</option>
+      <option value="3">3m</option>
+      <option value="5">5m</option>
+      <option value="15">15m</option>
+      <option value="30">30m</option>
+      <option value="60" selected>1h</option>
+      <option value="240">4h</option>
+      <option value="D">1D</option>
+      <option value="W">1W</option>
+      <option value="360D">360D / 5H</option>
+    </select>
     <div class="tdiv"></div>
     <div class="ind-group">
       <span class="ind-lbl">MA</span>
@@ -161,12 +164,16 @@ let S = {
 
 function tfParams(tf) {
   return {
-    '1': {mult:1,span:'minute',days:5},
-    '5': {mult:5,span:'minute',days:15},
-    '15':{mult:15,span:'minute',days:30},
-    '60':{mult:1,span:'hour',days:90},
-    'D': {mult:1,span:'day',days:730},
-    'W': {mult:1,span:'week',days:1825}
+    '1':    {mult:1,  span:'minute', days:5},
+    '3':    {mult:3,  span:'minute', days:10},
+    '5':    {mult:5,  span:'minute', days:15},
+    '15':   {mult:15, span:'minute', days:30},
+    '30':   {mult:30, span:'minute', days:60},
+    '60':   {mult:1,  span:'hour',   days:90},
+    '240':  {mult:4,  span:'hour',   days:365},
+    'D':    {mult:1,  span:'day',    days:730},
+    'W':    {mult:1,  span:'week',   days:1825},
+    '360D': {mult:5,  span:'hour',   days:360},
   }[tf]||{mult:1,span:'hour',days:90};
 }
 
@@ -363,7 +370,7 @@ function renderMain(){
     const p=hi-(range/7)*g2, y=Math.round(toY(p))+.5;
     ctx.strokeStyle=g2===0||g2===7?'#1c2333':'#131924';
     ctx.lineWidth=.5; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cW,y); ctx.stroke();
-    ctx.fillStyle='#3a4560'; ctx.fillText(fmtP(p),cW+4,y+3);
+    ctx.fillStyle='#c8d4e8'; ctx.fillText(fmtP(p),cW+4,y+3);
   }
 
   // Prev close
@@ -372,13 +379,13 @@ function renderMain(){
     if(pcy>0&&pcy<cH){
       ctx.strokeStyle='#3a456077'; ctx.setLineDash([4,4]); ctx.lineWidth=.8;
       ctx.beginPath(); ctx.moveTo(0,pcy); ctx.lineTo(cW,pcy); ctx.stroke();
-      ctx.setLineDash([]); ctx.fillStyle='#3a4560'; ctx.font='8px IBM Plex Mono';
+      ctx.setLineDash([]); ctx.fillStyle='#c8d4e8'; ctx.font='8px IBM Plex Mono';
       ctx.fillText('PC '+S.prevClose.toFixed(2),cW+4,pcy-2);
     }
   }
 
   // Time axis
-  ctx.fillStyle='#3a4560'; ctx.font='9px IBM Plex Mono'; ctx.textAlign='center';
+  ctx.fillStyle='#c8d4e8'; ctx.font='9px IBM Plex Mono'; ctx.textAlign='center';
   const lsp=Math.max(1,Math.ceil(70/step));
   for(let i=vs;i<=ve;i++){
     if(i%lsp!==0)continue;
@@ -386,7 +393,7 @@ function renderMain(){
     const x=toX(i)+cw/2; if(x<5||x>cW-5)continue;
     const d=new Date(c.t);
     const lbl=(S.tf==='D'||S.tf==='W')?`${d.getMonth()+1}/${d.getDate()}`
-      :S.tf==='60'?`${String(d.getHours()).padStart(2,'0')}:00`
+      :(S.tf==='60'||S.tf==='240'||S.tf==='360D')?`${String(d.getHours()).padStart(2,'0')}:00`
       :`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     ctx.fillText(lbl,x,cH+14);
     ctx.strokeStyle='#131924'; ctx.lineWidth=.5;
@@ -553,8 +560,7 @@ function updatePriceTag(){
 
 function setTF(tf){
   S.tf=tf;
-  const map={'1':'1m','5':'5m','15':'15m','60':'1h','D':'1D','W':'1W'};
-  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active',b.textContent===(map[tf]||tf)));
+  g('tf-select').value=tf;
   loadTicker(S.ticker);
 }
 
