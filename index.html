@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChartDesk — Trading Terminal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #0f1218;
+    --bg3: #141820;
+    --bg4: #1a2030;
+    --border: #1e2535;
+    --border2: #252d40;
+    --text: #c8d0e0;
+    --text2: #7a8599;
+    --text3: #4a5568;
+    --accent: #3b82f6;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --purple: #a855f7;
+    --orange: #f97316;
+    --cyan: #06b6d4;
+    --ema9: #f59e0b;
+    --ema21: #8b5cf6;
+    --sma50: #06b6d4;
+    --macd-line: #3b82f6;
+    --signal-line: #f97316;
+    --font: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; }
+
+  /* TOP BAR */
+  #topbar {
+    height: 36px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  #topbar .logo {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-right: 8px;
+  }
+  .index-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 7px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .index-pill .sym { color: var(--text2); font-weight: 500; }
+  .index-pill .val { color: var(--text); font-weight: 600; }
+  .index-pill .chg { font-size: 10px; }
+  .up { color: var(--green); }
+  .dn { color: var(--red); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .tb-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .tb-btn:hover { border-color: var(--accent); color: var(--text); }
+  #clock { font-family: var(--mono); font-size: 11px; color: var(--text2); min-width: 60px; text-align: right; }
+
+  /* MAIN LAYOUT */
+  #app { display: flex; flex-direction: column; height: 100vh; }
+  #grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    flex: 1;
+    gap: 1px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  /* CHART PANEL */
+  .panel {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .panel-header {
+    height: 34px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .ticker-input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    width: 64px;
+    cursor: pointer;
+    outline: none;
+    text-transform: uppercase;
+  }
+  .ticker-input:focus {
+    background: var(--bg3);
+    border-radius: 3px;
+    padding: 0 4px;
+  }
+  .separator { width: 1px; height: 16px; background: var(--border2); }
+  .tf-group { display: flex; gap: 1px; }
+  .tf-btn {
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 5px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.1s, color 0.1s;
+  }
+  .tf-btn:hover { background: var(--bg4); color: var(--text2); }
+  .tf-btn.active { background: var(--accent); color: #fff; }
+  .indicator-group { display: flex; gap: 2px; margin-left: 2px; }
+  .ind-btn {
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: var(--mono);
+    transition: all 0.1s;
+    background: transparent;
+    color: var(--text3);
+  }
+  .ind-btn.active { border-color: currentColor; opacity: 1; }
+  .ind-btn.ema9 { color: var(--ema9); }
+  .ind-btn.ema21 { color: var(--ema21); }
+  .ind-btn.sma50 { color: var(--sma50); }
+  .ind-btn.vol { color: var(--text2); }
+  .ind-btn.macd { color: var(--macd-line); }
+  .ind-btn.bb { color: var(--cyan); }
+  .panel-ohlc {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text2);
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .ohlc-val { display: flex; gap: 3px; }
+  .ohlc-lbl { color: var(--text3); }
+  .chart-body { flex: 1; position: relative; overflow: hidden; }
+  canvas { display: block; }
+  .price-tag {
+    position: absolute;
+    right: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 2px 0 0 2px;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .crosshair-price {
+    position: absolute;
+    right: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--text2);
+    color: var(--bg);
+    padding: 1px 5px;
+    border-radius: 2px 0 0 2px;
+    pointer-events: none;
+    display: none;
+    z-index: 11;
+  }
+  .crosshair-time {
+    position: absolute;
+    bottom: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--text2);
+    color: var(--bg);
+    padding: 1px 5px;
+    border-radius: 2px 2px 0 0;
+    pointer-events: none;
+    display: none;
+    z-index: 11;
+    transform: translateX(-50%);
+  }
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .loading-overlay.show { opacity: 1; pointer-events: all; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* TOOLTIP */
+  #tooltip {
+    position: fixed;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text);
+    pointer-events: none;
+    z-index: 100;
+    display: none;
+    line-height: 1.7;
+    min-width: 120px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <span class="logo">▲ CHARTDESK</span>
+    <div class="index-pill"><span class="sym">VIX</span><span class="val" id="idx-vix">16.87</span><span class="chg up">+0.78%</span></div>
+    <div class="index-pill"><span class="sym">SPX</span><span class="val" id="idx-spx">7,512.88</span><span class="chg up">+0.47%</span></div>
+    <div class="index-pill"><span class="sym">NDX</span><span class="val" id="idx-ndx">29,913.75</span><span class="chg up">+1.41%</span></div>
+    <div class="index-pill"><span class="sym">RUT</span><span class="val" id="idx-rut">2,907.69</span><span class="chg up">+1.32%</span></div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="addPanel()">+ Panel</button>
+      <button class="tb-btn" onclick="toggleLayout()">⊞ Layout</button>
+      <div id="clock">--:--:--</div>
+    </div>
+  </div>
+  <div id="grid">
+    <!-- panels injected by JS -->
+  </div>
+</div>
+<div id="tooltip"></div>
+
+<script>
+// ─── DATA ENGINE ────────────────────────────────────────────────────────────
+
+function generateCandles(ticker, tf, count) {
+  const seeds = { SPX:7480, TSLA:428, AAPL:211, NVDA:134, MSFT:445, GOOGL:384, AMZN:198, META:590, NOK:16.1, AMD:172 };
+  let price = seeds[ticker] || 100;
+  const vol = price * 0.0008;
+  const tfMs = { '1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1D':86400000 };
+  const ms = tfMs[tf] || 60000;
+  const now = Date.now();
+  const candles = [];
+  let time = now - count * ms;
+  for (let i = 0; i < count; i++) {
+    const drift = (Math.random() - 0.492) * vol;
+    const open = price;
+    const close = Math.max(open * 0.985, Math.min(open * 1.015, open + drift + (Math.random()-0.5)*vol*0.5));
+    const hi = Math.max(open, close) * (1 + Math.random() * 0.003);
+    const lo = Math.min(open, close) * (1 - Math.random() * 0.003);
+    const volume = Math.floor((500000 + Math.random() * 2000000) * (1 + Math.abs(drift/vol)*3));
+    candles.push({ t: time, o: open, h: hi, l: lo, c: close, v: volume });
+    price = close;
+    time += ms;
+  }
+  return candles;
+}
+
+// ─── INDICATORS ─────────────────────────────────────────────────────────────
+
+function calcEMA(closes, period) {
+  const k = 2 / (period + 1);
+  const ema = new Array(closes.length).fill(null);
+  let sum = 0, count = 0;
+  for (let i = 0; i < closes.length; i++) {
+    if (i < period - 1) { sum += closes[i]; count++; continue; }
+    if (i === period - 1) { sum += closes[i]; ema[i] = sum / period; continue; }
+    ema[i] = closes[i] * k + ema[i-1] * (1 - k);
+  }
+  return ema;
+}
+
+function calcSMA(closes, period) {
+  return closes.map((_, i) => {
+    if (i < period - 1) return null;
+    return closes.slice(i - period + 1, i + 1).reduce((a,b) => a+b, 0) / period;
+  });
+}
+
+function calcMACD(closes, fast=12, slow=26, signal=9) {
+  const emaFast = calcEMA(closes, fast);
+  const emaSlow = calcEMA(closes, slow);
+  const macdLine = closes.map((_, i) => (emaFast[i] != null && emaSlow[i] != null) ? emaFast[i] - emaSlow[i] : null);
+  const validMacd = macdLine.filter(v => v != null);
+  const signalEma = calcEMA(validMacd, signal);
+  let si = 0;
+  const signalLine = macdLine.map(v => v == null ? null : signalEma[si++]);
+  const histogram = macdLine.map((v, i) => (v != null && signalLine[i] != null) ? v - signalLine[i] : null);
+  return { macdLine, signalLine, histogram };
+}
+
+function calcBB(closes, period=20, std=2) {
+  const sma = calcSMA(closes, period);
+  return closes.map((_, i) => {
+    if (sma[i] == null) return null;
+    const slice = closes.slice(i - period + 1, i + 1);
+    const mean = sma[i];
+    const sd = Math.sqrt(slice.reduce((a, b) => a + (b - mean) ** 2, 0) / period);
+    return { mid: mean, upper: mean + sd * std, lower: mean - sd * std };
+  });
+}
+
+// ─── PANEL STATE ────────────────────────────────────────────────────────────
+
+const panels = [];
+let panelCount = 0;
+
+function createPanelState(ticker = 'SPX', tf = '1m') {
+  const id = panelCount++;
+  const state = {
+    id, ticker, tf,
+    candles: [],
+    indicators: { ema9: true, ema21: true, sma50: false, vol: true, macd: false, bb: false },
+    offset: 0,
+    scale: 1,
+    dragging: false,
+    dragStartX: 0,
+    dragStartOffset: 0,
+    crosshair: { x: -1, y: -1, active: false },
+    hoverCandle: null,
+  };
+  state.candles = generateCandles(ticker, tf, 300);
+  return state;
+}
+
+// ─── RENDERING ──────────────────────────────────────────────────────────────
+
+const PRICE_AXIS_W = 62;
+const TIME_AXIS_H = 22;
+const MACD_H_RATIO = 0.22;
+const VOL_H_RATIO = 0.12;
+
+function getPriceExtent(candles, visStart, visEnd) {
+  let lo = Infinity, hi = -Infinity;
+  for (let i = visStart; i <= visEnd; i++) {
+    if (!candles[i]) continue;
+    if (candles[i].l < lo) lo = candles[i].l;
+    if (candles[i].h > hi) hi = candles[i].h;
+  }
+  const pad = (hi - lo) * 0.08;
+  return { lo: lo - pad, hi: hi + pad };
+}
+
+function drawChart(state, canvas, macdCanvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth;
+  const H = canvas.clientHeight;
+  if (W === 0 || H === 0) return;
+
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const candleCount = Math.floor((W - PRICE_AXIS_W) / (8 * state.scale));
+  const totalCandles = state.candles.length;
+  const maxOffset = Math.max(0, totalCandles - candleCount);
+  state.offset = Math.max(0, Math.min(state.offset, maxOffset));
+
+  const visStart = Math.max(0, Math.floor(state.offset));
+  const visEnd = Math.min(totalCandles - 1, visStart + candleCount);
+
+  const chartW = W - PRICE_AXIS_W;
+  const chartH = H - TIME_AXIS_H;
+  const { lo, hi } = getPriceExtent(state.candles, visStart, visEnd);
+  const priceRange = hi - lo || 1;
+
+  function toY(price) { return chartH - ((price - lo) / priceRange * chartH); }
+  function toX(i) { return (i - state.offset) * (8 * state.scale); }
+  const candleW = Math.max(1, 8 * state.scale - 1.5);
+
+  // Background
+  ctx.fillStyle = '#0a0c0f';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#1a2030';
+  ctx.lineWidth = 0.5;
+  const gridLines = 6;
+  for (let i = 0; i <= gridLines; i++) {
+    const y = Math.round(chartH / gridLines * i) + 0.5;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(chartW, y); ctx.stroke();
+    const priceLabel = (hi - (priceRange / gridLines * i)).toFixed(2);
+    ctx.fillStyle = '#4a5568';
+    ctx.font = '9px IBM Plex Mono';
+    ctx.textAlign = 'left';
+    ctx.fillText(priceLabel, chartW + 4, y + 3);
+  }
+
+  // Time axis
+  const tfMs = { '1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1D':86400000 };
+  ctx.fillStyle = '#4a5568';
+  ctx.font = '9px IBM Plex Mono';
+  ctx.textAlign = 'center';
+  const labelEvery = Math.max(1, Math.ceil(80 / (8 * state.scale)));
+  for (let i = visStart; i <= visEnd; i += labelEvery) {
+    const x = toX(i);
+    if (x < 0 || x > chartW) continue;
+    const d = new Date(state.candles[i].t);
+    const label = state.tf === '1D'
+      ? `${d.getMonth()+1}/${d.getDate()}`
+      : `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    ctx.fillText(label, x + candleW/2, chartH + 14);
+    ctx.strokeStyle = '#1a2030';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(x + candleW/2, 0); ctx.lineTo(x + candleW/2, chartH); ctx.stroke();
+  }
+
+  // Bollinger Bands
+  if (state.indicators.bb) {
+    const closes = state.candles.map(c => c.c);
+    const bb = calcBB(closes);
+    ctx.lineWidth = 0.8;
+    ['upper','lower','mid'].forEach((band, bi) => {
+      ctx.strokeStyle = bi === 2 ? '#334155' : '#06b6d488';
+      ctx.beginPath();
+      let started = false;
+      for (let i = visStart; i <= visEnd; i++) {
+        if (!bb[i]) continue;
+        const x = toX(i) + candleW/2;
+        const y = toY(bb[i][band]);
+        if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+      }
+      ctx.stroke();
+    });
+    // Fill between bands
+    ctx.beginPath();
+    let started = false;
+    for (let i = visStart; i <= visEnd; i++) {
+      if (!bb[i]) continue;
+      const x = toX(i) + candleW/2;
+      if (!started) { ctx.moveTo(x, toY(bb[i].upper)); started = true; }
+      else ctx.lineTo(x, toY(bb[i].upper));
+    }
+    for (let i = visEnd; i >= visStart; i--) {
+      if (!bb[i]) continue;
+      ctx.lineTo(toX(i) + candleW/2, toY(bb[i].lower));
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#06b6d408';
+    ctx.fill();
+  }
+
+  // Moving averages
+  const closes = state.candles.map(c => c.c);
+  const maLines = [
+    { key: 'ema9', data: calcEMA(closes, 9), color: '#f59e0b', w: 1 },
+    { key: 'ema21', data: calcEMA(closes, 21), color: '#8b5cf6', w: 1.2 },
+    { key: 'sma50', data: calcSMA(closes, 50), color: '#06b6d4', w: 1.4 },
+  ];
+  maLines.forEach(ma => {
+    if (!state.indicators[ma.key]) return;
+    ctx.strokeStyle = ma.color;
+    ctx.lineWidth = ma.w;
+    ctx.beginPath();
+    let started = false;
+    for (let i = visStart; i <= visEnd; i++) {
+      if (ma.data[i] == null) continue;
+      const x = toX(i) + candleW/2;
+      const y = toY(ma.data[i]);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+
+  // Volume bars (bottom 15% of chart)
+  if (state.indicators.vol) {
+    const volBars = state.candles.slice(visStart, visEnd + 1);
+    const maxVol = Math.max(...volBars.map(c => c.v));
+    const volH = chartH * 0.14;
+    volBars.forEach((c, idx) => {
+      const i = idx + visStart;
+      const x = toX(i);
+      const barH = (c.v / maxVol) * volH;
+      ctx.fillStyle = c.c >= c.o ? '#22c55e28' : '#ef444428';
+      ctx.fillRect(x, chartH - barH, Math.max(1, candleW), barH);
+    });
+  }
+
+  // Candles
+  for (let i = visStart; i <= visEnd; i++) {
+    const c = state.candles[i];
+    const x = toX(i);
+    const isUp = c.c >= c.o;
+    const bodyTop = toY(Math.max(c.o, c.c));
+    const bodyBot = toY(Math.min(c.o, c.c));
+    const bodyH = Math.max(1, bodyBot - bodyTop);
+
+    // Wick
+    ctx.strokeStyle = isUp ? '#22c55e99' : '#ef444499';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + candleW/2, toY(c.h));
+    ctx.lineTo(x + candleW/2, bodyTop);
+    ctx.moveTo(x + candleW/2, bodyBot);
+    ctx.lineTo(x + candleW/2, toY(c.l));
+    ctx.stroke();
+
+    // Body
+    ctx.fillStyle = isUp ? '#22c55e' : '#ef4444';
+    if (candleW < 3) {
+      ctx.fillStyle = isUp ? '#22c55e' : '#ef4444';
+      ctx.fillRect(x, toY(c.h), 1, toY(c.l) - toY(c.h));
+    } else {
+      ctx.fillRect(x, bodyTop, candleW, bodyH);
+      // Border for hollow candles when big enough
+      if (candleW >= 6) {
+        ctx.strokeStyle = isUp ? '#16a34a' : '#dc2626';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x, bodyTop, candleW, bodyH);
+      }
+    }
+  }
+
+  // Crosshair
+  if (state.crosshair.active) {
+    const { x, y } = state.crosshair;
+    ctx.strokeStyle = '#4a556888';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, chartH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(chartW, y); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Price axis background
+  ctx.fillStyle = '#0a0c0f';
+  ctx.fillRect(chartW, 0, PRICE_AXIS_W, H);
+  ctx.strokeStyle = '#1e2535';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(chartW, 0); ctx.lineTo(chartW, H); ctx.stroke();
+
+  // Last price line + tag
+  const lastCandle = state.candles[state.candles.length - 1];
+  if (lastCandle) {
+    const lpy = toY(lastCandle.c);
+    const isUp = lastCandle.c >= lastCandle.o;
+    ctx.strokeStyle = isUp ? '#22c55e55' : '#ef444455';
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(0, lpy); ctx.lineTo(chartW, lpy); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Price tag on axis
+    const tagColor = isUp ? '#22c55e' : '#ef4444';
+    ctx.fillStyle = tagColor;
+    ctx.fillRect(chartW + 1, lpy - 8, PRICE_AXIS_W - 1, 16);
+    ctx.fillStyle = '#0a0c0f';
+    ctx.font = 'bold 10px IBM Plex Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(lastCandle.c.toFixed(2), chartW + PRICE_AXIS_W/2, lpy + 3.5);
+  }
+
+  // ── MACD sub-panel ──────────────────────────────────────────────────────
+  if (state.indicators.macd && macdCanvas) {
+    const mW = macdCanvas.clientWidth;
+    const mH = macdCanvas.clientHeight;
+    if (mW === 0 || mH === 0) return;
+    macdCanvas.width = mW * dpr;
+    macdCanvas.height = mH * dpr;
+    const mc = macdCanvas.getContext('2d');
+    mc.scale(dpr, dpr);
+
+    mc.fillStyle = '#080b0e';
+    mc.fillRect(0, 0, mW, mH);
+    mc.strokeStyle = '#1e2535';
+    mc.lineWidth = 1;
+    mc.beginPath(); mc.moveTo(0, 0); mc.lineTo(mW - PRICE_AXIS_W, 0); mc.stroke();
+
+    const { macdLine, signalLine, histogram } = calcMACD(closes);
+    const visHist = histogram.slice(visStart, visEnd + 1).filter(v => v != null);
+    const macdMax = Math.max(...visHist.map(Math.abs), 0.01);
+
+    function mToY(v) { return mH/2 - (v / macdMax) * (mH/2 - 4); }
+
+    // Zero line
+    mc.strokeStyle = '#2d3748';
+    mc.lineWidth = 0.5;
+    mc.beginPath(); mc.moveTo(0, mH/2); mc.lineTo(mW - PRICE_AXIS_W, mH/2); mc.stroke();
+
+    // Histogram
+    for (let i = visStart; i <= visEnd; i++) {
+      if (histogram[i] == null) continue;
+      const x = toX(i);
+      const y0 = mH/2;
+      const y1 = mToY(histogram[i]);
+      mc.fillStyle = histogram[i] >= 0 ? '#22c55e66' : '#ef444466';
+      mc.fillRect(x, Math.min(y0, y1), Math.max(1, candleW), Math.abs(y1 - y0));
+    }
+
+    // MACD line
+    mc.strokeStyle = '#3b82f6';
+    mc.lineWidth = 1;
+    mc.beginPath();
+    let mStarted = false;
+    for (let i = visStart; i <= visEnd; i++) {
+      if (macdLine[i] == null) continue;
+      const x = toX(i) + candleW/2;
+      const y = mToY(macdLine[i]);
+      if (!mStarted) { mc.moveTo(x, y); mStarted = true; } else mc.lineTo(x, y);
+    }
+    mc.stroke();
+
+    // Signal line
+    mc.strokeStyle = '#f97316';
+    mc.lineWidth = 1;
+    mc.beginPath();
+    let sStarted = false;
+    for (let i = visStart; i <= visEnd; i++) {
+      if (signalLine[i] == null) continue;
+      const x = toX(i) + candleW/2;
+      const y = mToY(signalLine[i]);
+      if (!sStarted) { mc.moveTo(x, y); sStarted = true; } else mc.lineTo(x, y);
+    }
+    mc.stroke();
+
+    // Label
+    mc.fillStyle = '#4a5568';
+    mc.font = '9px IBM Plex Mono';
+    mc.textAlign = 'left';
+    mc.fillText('MACD(12,26,9)', 6, 11);
+  } else if (macdCanvas) {
+    const mW = macdCanvas.clientWidth;
+    const mH = macdCanvas.clientHeight;
+    macdCanvas.width = 1;
+    macdCanvas.height = 1;
+  }
+}
+
+// ─── PANEL DOM ───────────────────────────────────────────────────────────────
+
+function buildPanel(state) {
+  const div = document.createElement('div');
+  div.className = 'panel';
+  div.dataset.id = state.id;
+
+  const tfs = ['1m','5m','15m','1h','4h','1D'];
+  const tfBtns = tfs.map(t =>
+    `<button class="tf-btn${t===state.tf?' active':''}" onclick="setTF(${state.id},'${t}')">${t}</button>`
+  ).join('');
+
+  div.innerHTML = `
+    <div class="panel-header">
+      <input class="ticker-input" value="${state.ticker}" maxlength="6"
+        onchange="setTicker(${state.id},this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()"
+      />
+      <div class="separator"></div>
+      <div class="tf-group">${tfBtns}</div>
+      <div class="separator"></div>
+      <div class="indicator-group">
+        <button class="ind-btn ema9 ${state.indicators.ema9?'active':''}" onclick="toggleInd(${state.id},'ema9',this)">EMA9</button>
+        <button class="ind-btn ema21 ${state.indicators.ema21?'active':''}" onclick="toggleInd(${state.id},'ema21',this)">EMA21</button>
+        <button class="ind-btn sma50 ${state.indicators.sma50?'active':''}" onclick="toggleInd(${state.id},'sma50',this)">SMA50</button>
+        <button class="ind-btn bb ${state.indicators.bb?'active':''}" onclick="toggleInd(${state.id},'bb',this)">BB</button>
+        <button class="ind-btn vol ${state.indicators.vol?'active':''}" onclick="toggleInd(${state.id},'vol',this)">VOL</button>
+        <button class="ind-btn macd ${state.indicators.macd?'active':''}" onclick="toggleInd(${state.id},'macd',this)">MACD</button>
+      </div>
+      <div class="panel-ohlc" id="ohlc-${state.id}">
+        <span class="ohlc-val"><span class="ohlc-lbl">O</span><span id="o-${state.id}">—</span></span>
+        <span class="ohlc-val"><span class="ohlc-lbl">H</span><span id="h-${state.id}">—</span></span>
+        <span class="ohlc-val"><span class="ohlc-lbl">L</span><span id="l-${state.id}">—</span></span>
+        <span class="ohlc-val"><span class="ohlc-lbl">C</span><span id="c-${state.id}">—</span></span>
+      </div>
+    </div>
+    <div class="chart-body" id="body-${state.id}">
+      <canvas id="canvas-${state.id}" style="position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      <canvas id="macd-canvas-${state.id}" style="position:absolute;bottom:0;left:0;width:calc(100% - ${PRICE_AXIS_W}px);height:${state.indicators.macd?'22%':'0'};transition:height 0.2s"></canvas>
+      <div class="crosshair-price" id="ch-price-${state.id}"></div>
+      <div class="crosshair-time" id="ch-time-${state.id}"></div>
+    </div>
+  `;
+
+  return div;
+}
+
+function mountPanelEvents(state) {
+  const body = document.getElementById(`body-${state.id}`);
+  const canvas = document.getElementById(`canvas-${state.id}`);
+
+  body.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    state.crosshair = { x, y, active: true };
+
+    // Find hover candle
+    const chartW = rect.width - PRICE_AXIS_W;
+    const chartH = rect.height - TIME_AXIS_H;
+    const candleCount = Math.floor(chartW / (8 * state.scale));
+    const visStart = Math.max(0, Math.floor(state.offset));
+    const visEnd = Math.min(state.candles.length - 1, visStart + candleCount);
+    const { lo, hi } = getPriceExtent(state.candles, visStart, visEnd);
+    const priceRange = hi - lo || 1;
+
+    const ci = Math.floor(state.offset + x / (8 * state.scale));
+    if (ci >= 0 && ci < state.candles.length) {
+      state.hoverCandle = ci;
+      const c = state.candles[ci];
+      document.getElementById(`o-${state.id}`).textContent = c.o.toFixed(2);
+      document.getElementById(`h-${state.id}`).textContent = c.h.toFixed(2);
+      document.getElementById(`l-${state.id}`).textContent = c.l.toFixed(2);
+      const cel = document.getElementById(`c-${state.id}`);
+      cel.textContent = c.c.toFixed(2);
+      cel.style.color = c.c >= c.o ? '#22c55e' : '#ef4444';
+
+      // Crosshair price tag
+      const price = lo + (1 - y / chartH) * priceRange;
+      const chp = document.getElementById(`ch-price-${state.id}`);
+      chp.style.display = 'block';
+      chp.style.top = (y - 8) + 'px';
+      chp.textContent = price.toFixed(2);
+
+      // Crosshair time tag
+      const d = new Date(c.t);
+      const tLabel = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      const cht = document.getElementById(`ch-time-${state.id}`);
+      cht.style.display = 'block';
+      cht.style.left = x + 'px';
+      cht.textContent = tLabel;
+    }
+
+    if (state.dragging) {
+      const dx = e.clientX - state.dragStartX;
+      state.offset = state.dragStartOffset - dx / (8 * state.scale);
+    }
+    renderPanel(state);
+  });
+
+  body.addEventListener('mouseleave', () => {
+    state.crosshair.active = false;
+    document.getElementById(`ch-price-${state.id}`).style.display = 'none';
+    document.getElementById(`ch-time-${state.id}`).style.display = 'none';
+    renderPanel(state);
+  });
+
+  body.addEventListener('mousedown', e => {
+    state.dragging = true;
+    state.dragStartX = e.clientX;
+    state.dragStartOffset = state.offset;
+    body.style.cursor = 'grabbing';
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (state.dragging) {
+      state.dragging = false;
+      body.style.cursor = 'crosshair';
+    }
+  });
+
+  body.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (e.ctrlKey || e.metaKey) {
+      // Zoom
+      const factor = e.deltaY > 0 ? 0.85 : 1.18;
+      state.scale = Math.max(0.2, Math.min(5, state.scale * factor));
+    } else {
+      // Pan
+      state.offset += e.deltaY > 0 ? 5 : -5;
+    }
+    renderPanel(state);
+  }, { passive: false });
+
+  body.style.cursor = 'crosshair';
+}
+
+function renderPanel(state) {
+  const canvas = document.getElementById(`canvas-${state.id}`);
+  const macdCanvas = document.getElementById(`macd-canvas-${state.id}`);
+  if (!canvas) return;
+
+  // Adjust macd canvas height
+  if (macdCanvas) {
+    macdCanvas.style.height = state.indicators.macd ? '22%' : '0';
+    canvas.style.height = state.indicators.macd ? '78%' : '100%';
+  }
+
+  drawChart(state, canvas, macdCanvas);
+}
+
+// ─── PUBLIC CONTROLS ────────────────────────────────────────────────────────
+
+function setTF(id, tf) {
+  const state = panels.find(p => p.id === id);
+  if (!state) return;
+  state.tf = tf;
+  state.candles = generateCandles(state.ticker, tf, 300);
+  state.offset = 0;
+
+  // Update TF buttons
+  const panel = document.querySelector(`.panel[data-id="${id}"]`);
+  panel.querySelectorAll('.tf-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent === tf);
+  });
+  renderPanel(state);
+}
+
+function setTicker(id, ticker) {
+  const state = panels.find(p => p.id === id);
+  if (!state) return;
+  state.ticker = ticker.toUpperCase();
+  state.candles = generateCandles(state.ticker, state.tf, 300);
+  state.offset = 0;
+  renderPanel(state);
+}
+
+function toggleInd(id, key, btn) {
+  const state = panels.find(p => p.id === id);
+  if (!state) return;
+  state.indicators[key] = !state.indicators[key];
+  btn.classList.toggle('active', state.indicators[key]);
+  renderPanel(state);
+}
+
+const LAYOUTS = ['2x2', '1x2', '2x1', '1x1'];
+let layoutIdx = 0;
+
+function toggleLayout() {
+  layoutIdx = (layoutIdx + 1) % LAYOUTS.length;
+  const layout = LAYOUTS[layoutIdx];
+  const grid = document.getElementById('grid');
+  const configs = {
+    '2x2': ['1fr 1fr', '1fr 1fr'],
+    '1x2': ['1fr', '1fr 1fr'],
+    '2x1': ['1fr 1fr', '1fr'],
+    '1x1': ['1fr', '1fr'],
+  };
+  const [cols, rows] = configs[layout];
+  grid.style.gridTemplateColumns = cols;
+  grid.style.gridTemplateRows = rows;
+  setTimeout(() => panels.forEach(renderPanel), 50);
+}
+
+function addPanel() {
+  if (panels.length >= 6) return;
+  const tickers = ['AAPL','NVDA','MSFT','AMZN','META','AMD'];
+  const ticker = tickers[panels.length % tickers.length];
+  const state = createPanelState(ticker, '1m');
+  panels.push(state);
+  const grid = document.getElementById('grid');
+  const panelEl = buildPanel(state);
+  grid.appendChild(panelEl);
+  mountPanelEvents(state);
+  renderPanel(state);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+const defaultTickers = ['SPX', 'NOK', 'TSLA', 'GOOGL'];
+
+defaultTickers.forEach(ticker => {
+  const state = createPanelState(ticker, '1m');
+  panels.push(state);
+});
+
+const grid = document.getElementById('grid');
+panels.forEach(state => {
+  const panelEl = buildPanel(state);
+  grid.appendChild(panelEl);
+});
+
+panels.forEach(state => {
+  mountPanelEvents(state);
+  renderPanel(state);
+});
+
+// Re-render on resize
+const ro = new ResizeObserver(() => {
+  panels.forEach(renderPanel);
+});
+ro.observe(grid);
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Simulate live ticks every 2s
+setInterval(() => {
+  panels.forEach(state => {
+    const last = state.candles[state.candles.length - 1];
+    const vol = last.c * 0.0005;
+    const tick = (Math.random() - 0.49) * vol;
+    last.c = Math.max(last.l, Math.min(last.h, last.c + tick));
+    last.h = Math.max(last.h, last.c);
+    last.l = Math.min(last.l, last.c);
+    if (state.offset === 0 || state.offset < 5) renderPanel(state);
+  });
+}, 2000);
+
+// Update index bar tickers
+setInterval(() => {
+  const ticks = { vix:[16.87,0.02], spx:[7512.88,0.5], ndx:[29913.75,10], rut:[2907.69,1] };
+  Object.entries(ticks).forEach(([k,[base,vol]]) => {
+    const el = document.getElementById(`idx-${k}`);
+    if (el) {
+      const v = base + (Math.random()-0.5)*vol;
+      el.textContent = v > 1000 ? v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : v.toFixed(2);
+    }
+  });
+}, 3000);
+</script>
+</body>
+</html>
