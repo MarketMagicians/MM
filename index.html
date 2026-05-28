@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>MM</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
@@ -13,17 +13,18 @@
   --text:#c8d4e8;--text2:#6b7a99;--text3:#3a4d6e;
   --accent:#3b82f6;--green:#22c55e;--red:#ef4444;
   --yellow:#f59e0b;--purple:#8b5cf6;--cyan:#06b6d4;
-  --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --font:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--mono:'IBM Plex Mono','SF Mono','Consolas','Courier New',monospace;
 }
-html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px}
-  #app{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;overflow:hidden}
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+  *{box-sizing:border-box}
+  #app{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;overflow:hidden;transform:translateZ(0)}
   #bar1{height:60px;flex:0 0 60px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:6px;overflow:hidden;user-select:none;position:relative;z-index:50}
   #bar2{height:34px;flex:0 0 34px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:8px;overflow:visible;user-select:none;position:relative;z-index:100}
   #chart-wrap{flex:1 1 0%;min-height:0;position:relative;overflow:hidden;background:var(--bg);user-select:none;cursor:crosshair}
-  #chart-wrap canvas{position:absolute;top:0;left:0;display:block}
+  #chart-wrap canvas{position:absolute;top:0;left:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 #sub-panels{flex:0 0 auto;display:flex;flex-direction:column}
 .sub-panel{position:relative;border-top:1px solid var(--border);background:var(--bg);height:110px;min-height:40px;max-height:400px}
-.sub-canvas{display:block;width:100%;height:100%}
+.sub-canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
 .sub-lbl{position:absolute;top:4px;left:8px;font-family:var(--mono);font-size:9px;color:var(--text);font-weight:600;pointer-events:none;z-index:2;display:flex;align-items:center;gap:6px}
 .sub-resize{position:absolute;bottom:0;left:0;right:0;height:6px;cursor:ns-resize;z-index:10;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
 .sub-panel:hover .sub-resize{opacity:1}
@@ -73,7 +74,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   #multi-grid.layout-4{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
   #multi-grid.layout-6{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr}
   .chart-pane{position:relative;overflow:hidden;background:var(--bg);min-height:0}
-  .chart-pane iframe{width:100%;height:100%;border:none;display:block}
+  .chart-pane iframe{width:100%;height:100%;border:none;display:block;image-rendering:crisp-edges}
   .chart-pane-header{position:absolute;top:0;left:0;right:0;height:22px;background:rgba(13,21,38,0.92);display:flex;align-items:center;padding:0 6px;gap:6px;z-index:10;border-bottom:1px solid var(--border)}
   .chart-pane-ticker{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text);background:transparent;border:none;width:70px;outline:none;cursor:pointer}
   .chart-pane-ticker:hover{color:var(--accent)}
@@ -242,8 +243,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div id="change-display">—</div>
     <div class="tb-div"></div>
     <select id="tf-select" onchange="setTF(this.value)">
-      <option value="1">1m</option><option value="3">3m</option><option value="5">5m</option>
-      <option value="15">15m</option><option value="30">30m</option><option value="60" selected>1h</option>
+      <option value="1">1m</option><option value="3">3m</option><option value="5" selected>5m</option>
+      <option value="15">15m</option><option value="30">30m</option><option value="60">1h</option>
       <option value="240">4h</option><option value="D">1D</option><option value="W">1W</option>
       <option value="360D">360D/5H</option>
     </select>
@@ -263,7 +264,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
         <div class="dd-item ttm" onclick="toggleInd('ttm',this)"><span class="dd-check"></span><span class="dd-item-lbl">TTM Squeeze</span></div>
       </div>
     </div>
-    <div class="dd-wrap"><div class="dd-btn" id="dd-pl-btn" onclick="toggleDD('pl')">Price Levels <span class="dd-badge hidden" id="dd-pl-badge">0</span><span class="dd-arrow">▾</span></div>
+    <div class="dd-wrap"><div class="dd-btn" id="dd-pl-btn" onclick="toggleDD('pl')">Levels <span class="dd-badge hidden" id="dd-pl-badge">0</span><span class="dd-arrow">▾</span></div>
       <div class="dd-panel" id="dd-pl-panel">
         <div class="dd-item pl-atr" onclick="togglePL('atr',this)"><span class="dd-check"></span><span class="dd-item-lbl">ATR Levels</span></div>
         <div class="dd-divider"></div>
@@ -274,7 +275,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       </div>
     </div>
     <!-- Dark Pool Dropdown -->
-    <div class="dd-wrap"><div class="dd-btn" id="dd-dp-btn" onclick="toggleDD('dp')">Dark Pool <span class="dd-badge hidden" id="dd-dp-badge">0</span><span class="dd-arrow">▾</span></div>
+    <div class="dd-wrap"><div class="dd-btn" id="dd-dp-btn" onclick="toggleDD('dp')">DP <span class="dd-badge hidden" id="dd-dp-badge">0</span><span class="dd-arrow">▾</span></div>
       <div class="dd-panel" id="dd-dp-panel" style="min-width:230px">
 
         <!-- LIVE STATUS -->
@@ -327,7 +328,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--mono);font-size:9px;color:var(--text3);flex-shrink:0">Tolerance $</span>
-            <input id="dp-tolerance" type="number" min="0" max="999" step="0.01" value="0.10"
+            <input id="dp-tolerance" type="number" min="0" max="999" step="0.01" value="0.20"
               onclick="event.stopPropagation()" oninput="dpToleranceChange(this.value);event.stopPropagation()"
               onkeydown="event.stopPropagation()"
               style="width:64px;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;font-weight:600;padding:3px 6px;border-radius:3px;outline:none;text-align:right;-moz-appearance:textfield"/>
@@ -348,7 +349,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
         <!-- DISPLAY -->
         <div style="padding:6px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Display</div>
         <div class="dd-item gex-bars active" id="gex-bars-item" onclick="toggleGEX('bars',this)"><span class="dd-check"></span><span class="dd-item-lbl">GEX Bars (right side)</span></div>
-        <div class="dd-item gex-flip" id="gex-flip-item" onclick="toggleGEX('flip',this)"><span class="dd-check"></span><span class="dd-item-lbl">Flip Level line</span></div>
+        <div class="dd-item gex-flip active" id="gex-flip-item" onclick="toggleGEX('flip',this)"><span class="dd-check"></span><span class="dd-item-lbl">Flip Level line</span></div>
         <div class="dd-item gex-levels" id="gex-levels-item" onclick="toggleGEX('levels',this)"><span class="dd-check"></span><span class="dd-item-lbl">Key Strike lines</span></div>
         <div class="dd-item gex-table" id="gex-table-item" onclick="toggleGEX('table',this)"><span class="dd-check"></span><span class="dd-item-lbl">Strike Table (ranked)</span></div>
         <div class="dd-divider"></div>
@@ -386,7 +387,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
           <div id="gex-date-preview" style="font-family:var(--mono);font-size:8px;color:var(--accent);line-height:1.4"></div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-family:var(--mono);font-size:9px;color:var(--text3);flex-shrink:0">Bar Width</span>
-            <input id="gex-bar-width" type="number" min="4" max="80" step="2" value="40"
+            <input id="gex-bar-width" type="number" min="4" max="200" step="2" value="80"
               onclick="event.stopPropagation()" oninput="schedRender();event.stopPropagation()"
               onkeydown="event.stopPropagation()"
               style="width:52px;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 6px;border-radius:3px;outline:none;text-align:right;-moz-appearance:textfield"/>
@@ -397,8 +398,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
             <select id="gex-refresh" onclick="event.stopPropagation()" onchange="gexSetRefresh();event.stopPropagation()"
               style="flex:1;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 5px;border-radius:3px;outline:none">
               <option value="0">Off — manual only</option>
-              <option value="3" selected>Every 3s</option>
-              <option value="5">Every 5s</option>
+              <option value="3">Every 3s</option>
+              <option value="5" selected>Every 5s</option>
               <option value="10">Every 10s</option>
               <option value="30">Every 30s</option>
               <option value="60">Every 60s</option>
@@ -501,7 +502,7 @@ function fmtTimeCSTSec(ms){const d=toCST(ms);return`${String(d.getHours()).padSt
 
 // ── STATE ────────────────────────────────────────────────────────────────────
 const S={
-  ticker:'AAPL',tf:'60',candles:[],
+  ticker:'SPY',tf:'5',candles:[],
   offset:0,scale:1,prevClose:null,
   priceScale:1,priceOffset:0,
   dragging:false,dragStartX:0,dragStartOffset:0,
@@ -513,7 +514,7 @@ const S={
   priceLevels:{atr:false,pdhl:false,pmhl:false,fib:false},
   darkPool:{small:false,med:false,large:false,golden:true},
   dpTrades:[],
-  dpLevels:{enabled:false, tolerance:0.10},  // horizontal level lines
+  dpLevels:{enabled:false, tolerance:0.20},  // horizontal level lines
   maLines:[
     {key:'ma0',type:'EMA',period:9,  active:true, color:'#f59e0b'},
     {key:'ma1',type:'EMA',period:21, active:true, color:'#8b5cf6'},
@@ -647,8 +648,28 @@ async function loadTicker(ticker){
       fetchPrevClose(S.ticker)
     ]);
     S.candles=candles; S.prevClose=prevClose;
-    S.offset=Math.max(0,candles.length-visCnt()-10);
     S.scale=1; S.priceScale=1; S.priceOffset=0;
+
+    // Scroll to show today's market open (8:30am CT) through current candle
+    // Find the index of today's first regular session candle (8:30am CT = 510 mins)
+    const todayCT=toCST(Date.now());
+    const todayKey=`${todayCT.getFullYear()}-${todayCT.getMonth()}-${todayCT.getDate()}`;
+    let openIdx=-1;
+    for(let i=0;i<candles.length;i++){
+      const d=toCST(candles[i].t);
+      const dKey=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      if(dKey===todayKey&&d.getHours()*60+d.getMinutes()>=510){
+        openIdx=i; break;
+      }
+    }
+    // Position open candle ~8% from left edge so you see a little before open
+    if(openIdx>=0){
+      const visCount=Math.floor((window.innerWidth-72)/(BASE_STEP*S.scale));
+      S.offset=Math.max(0, openIdx-Math.floor(visCount*0.08));
+    } else {
+      S.offset=Math.max(0,candles.length-visCnt()-10);
+    }
+
     hideLoad(); updatePriceDisplay();
     renderAll();
     // Non-critical — run after chart is already visible
@@ -657,11 +678,9 @@ async function loadTicker(ticker){
       fetchBidAsk(S.ticker);
       loadIndexBar();
       autoLoadDPToday();
-      // Auto-load GEX if enabled (has data or first load)
-      if(S_GEX.loaded||g('gex-bars-item')?.classList.contains('active')){
-        loadGEX();
-      }
-    }, 50);
+      // Always auto-load GEX for current ticker
+      loadGEX();
+    }, 100);
   }catch(e){hideLoad();logErr('HTTP',e.message)}
 }
 function updatePriceDisplay(){
@@ -739,17 +758,12 @@ function renderMain(){
   const wrap=g('chart-wrap');
   // Self-heal height every frame
   (function ensureHeight(){
-    if(_isPaneMode){
-      // Pane mode: full window height
-      const h=Math.max(200,window.innerHeight);
-      if(Math.abs(wrap.clientHeight-h)>2){wrap.style.height=h+'px';wrap.style.flex='none';}
-      return;
-    }
-    // Normal mode: window height minus bar1+bar2 heights
     const bar1=g('bar1'),bar2=g('bar2'),sp=g('sub-panels');
-    const barsH=(bar1?bar1.offsetHeight:60)+(bar2?bar2.offsetHeight:34);
     const subH=sp?sp.offsetHeight:0;
-    const h=Math.max(200,window.innerHeight-barsH-subH);
+    const barsH=_isPaneMode
+      ?(bar2?bar2.offsetHeight:34)  // pane: only bar2
+      :(bar1?bar1.offsetHeight:60)+(bar2?bar2.offsetHeight:34); // normal: bar1+bar2
+    const h=Math.max(100,window.innerHeight-barsH-subH);
     if(Math.abs(wrap.clientHeight-h)>2){wrap.style.height=h+'px';wrap.style.flex='none';}
   })();
   const W=wrap.clientWidth,H=wrap.clientHeight;
@@ -774,33 +788,28 @@ function renderMain(){
 
   // Background
   ctx.fillStyle='#0d1526';ctx.fillRect(0,0,W,H);
-
   // Price axis bg
   ctx.fillStyle='#111c30';ctx.fillRect(cW,0,PRICE_W,H);
 
   // Grid — snap to clean price increments based on visible range
   ctx.font='9px IBM Plex Mono';ctx.textAlign='left';
   {
-    // Pick the largest increment that gives 5–14 lines in the visible range
     const candidates=[0.01,0.02,0.05,0.10,0.25,0.50,1,2,5,10,20,50,100,250,500];
     let inc=0.50;
     for(const c of candidates){
       const lines=Math.floor(range/c);
       if(lines>=5&&lines<=14){inc=c;break;}
     }
-    // First snapped price at or above lo
     const firstP=Math.ceil(lo/inc)*inc;
     for(let p=firstP;p<=hi;p=Math.round((p+inc)*1e8)/1e8){
       const y=Math.round(toY(p))+0.5;
       if(y<0||y>cH)continue;
-      // Highlight $1 and $0.50 boundaries differently
       const isWhole=Math.abs(p-Math.round(p))<0.001;
       const isHalf=Math.abs((p*2)-Math.round(p*2))<0.001&&!isWhole;
       ctx.strokeStyle=isWhole?'#253554':isHalf?'#1e2d47':'#172138';
       ctx.lineWidth=isWhole?0.6:0.4;
       ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();
-      // Price label
-      ctx.fillStyle=isWhole?'#c8d4e8':isHalf?'#8a9ab8':'#6b7a99';
+      ctx.fillStyle=isWhole?'#ffffff':isHalf?'#c8d4e8':'#8a9ab8';
       ctx.font=isWhole?'bold 9px IBM Plex Mono':'9px IBM Plex Mono';
       ctx.fillText(fmtP(p),cW+4,y+3);
     }
@@ -817,7 +826,7 @@ function renderMain(){
     }
   }
 
-  // ── Time axis ─────────────────────────────────────────────────────────────
+  // ── Time axis (before clip — needs to draw into time area) ─────────────
   const lsp=Math.max(1,Math.ceil(70/step));
   const isDaily=S.tf==='D'||S.tf==='W';
   const isMultiHour=S.tf==='60'||S.tf==='240'||S.tf==='360D';
@@ -845,6 +854,10 @@ function renderMain(){
 
   // ── Row 2: date pills via shared function ─────────────────────────────
   drawDateAxis(ctx,cW,cH,vs,ve,step,toX);
+
+  // ── Clip to chart area — candles/MAs/indicators won't overflow into price axis ──
+  ctx.save();
+  ctx.beginPath();ctx.rect(0,0,cW,cH);ctx.clip();
 
   // Extended hours shading + session dividers (intraday only)
   if(S.tf!=='D'&&S.tf!=='W'&&S.tf!=='360D'){
@@ -949,8 +962,12 @@ function renderMain(){
   // Dark Pool level lines
   try{drawDPLevelLines(ctx,toY,cW,cH)}catch(e){console.error('dpLevels:',e)}
 
-  // Gamma Exposure
+  // Restore clip — everything below draws without clipping
+  ctx.restore();
+
+  // Gamma Exposure — drawn after restore so labels aren't clipped
   try{drawGEX(ctx,toY,cW,cH)}catch(e){console.error('gex:',e)}
+
   ctx.fillStyle='#3a4d6e';ctx.font='10px IBM Plex Mono';ctx.textAlign='center';
   ctx.fillText('⇕',cW+PRICE_W/2,cH/2+4);
 
@@ -1703,10 +1720,12 @@ function gexExpiryChange(){
 const S_GEX={
   data:[],          // [{strike, gex, callGex, putGex, oi, exp}] — recomputed live
   contracts:[],     // [{strike, iv, oi, type, exp, t}] — raw chain, fetched once
-  enabled:{bars:true, flip:false, levels:false, table:false},
+  enabled:{bars:true, flip:true, levels:false, table:false},
   loaded:false,
   lastSpot:0,       // last spot price we computed GEX at
+  flipStrike:null,
   liveInterval:null,
+  chainInterval:null,
 };
 
 // ── BLACK-SCHOLES GAMMA ───────────────────────────────────────────────────────
@@ -1726,10 +1745,8 @@ function gexRecompute(spot){
   const strikeMap=new Map();
 
   S_GEX.contracts.forEach(c=>{
-    // Time to expiry in years
     const expMs=new Date(c.exp).getTime();
     const T=Math.max(0,(expMs-now)/(365.25*24*3600*1000));
-    // Recalculate gamma from current spot
     const gamma=bsGamma(spot,c.strike,c.iv,T);
     const gexVal=gamma*c.oi*100*(spot*spot);
     if(!strikeMap.has(c.strike))strikeMap.set(c.strike,{callGex:0,putGex:0,callOI:0,putOI:0,expirations:new Set()});
@@ -1746,32 +1763,41 @@ function gexRecompute(spot){
     data.push({strike,gex:netGex,callGex:v.callGex,putGex:v.putGex,oi:v.callOI+v.putOI,exp:exps[0]||''});
   });
   data.sort((a,b)=>a.strike-b.strike);
-  S_GEX.data=data;
-  S_GEX.lastSpot=spot;
+
+  if(data.length>0){
+    S_GEX.data=data;
+    S_GEX.lastSpot=spot;
+
+    // Recalculate and cache flip strike here — never cleared by drawGEX
+    let cumGex=0,flipStrike=null,minAbsCum=Infinity,minAbsStrike=null;
+    for(let i=0;i<data.length;i++){
+      const prev=cumGex;
+      cumGex+=data[i].gex;
+      if(i>0&&((prev<0&&cumGex>=0)||(prev>0&&cumGex<=0))){
+        flipStrike=(data[i-1].strike+data[i].strike)/2;
+        break;
+      }
+      if(Math.abs(cumGex)<minAbsCum){minAbsCum=Math.abs(cumGex);minAbsStrike=data[i].strike;}
+    }
+    const resolved=flipStrike||(minAbsStrike||null);
+    if(resolved)S_GEX.flipStrike=resolved; // only update if valid
+  }
 }
 
 function gexSetRefresh(){
-  // Clear any existing interval
   if(S_GEX.liveInterval){clearInterval(S_GEX.liveInterval);S_GEX.liveInterval=null;}
-  const secs=parseInt(g('gex-refresh')?.value||'3');
-  if(secs===0||!S_GEX.loaded)return;
+  if(S_GEX.chainInterval){clearInterval(S_GEX.chainInterval);S_GEX.chainInterval=null;}
+  const secs=parseInt(g('gex-refresh')?.value||'5');
+  if(secs===0)return;
+  if(!S_GEX.data.length)return;
+
   S_GEX.liveInterval=setInterval(()=>{
-    if(!S_GEX.contracts.length)return;
+    // Only recompute if spot moved — never touch data otherwise
+    if(!S_GEX.contracts.length||!S_GEX.data.length)return;
     const spot=S.candles.length?S.candles[S.candles.length-1].c:0;
-    if(!spot||Math.abs(spot-S_GEX.lastSpot)<0.001)return; // skip if price unchanged
+    if(!spot||Math.abs(spot-S_GEX.lastSpot)<0.001)return;
     gexRecompute(spot);
     schedRender();
-    // Update status with last refresh time
-    const st=g('gex-status');
-    if(st){
-      const d=toCST(Date.now());
-      const t=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-      const pos=S_GEX.data.filter(d=>d.gex>0).length;
-      const neg=S_GEX.data.filter(d=>d.gex<0).length;
-      st.innerHTML=`<span style="color:#22c55e">● LIVE</span>  ${S_GEX.data.length} strikes  <span style="color:#6b7a99">${t} CT</span><br>`+
-        `<span style="color:#22c55e">+GEX: ${pos}</span>  <span style="color:#ef4444">−GEX: ${neg}</span>  `+
-        `<span style="color:#6b7a99">spot $${spot.toFixed(2)}</span>`;
-    }
   }, secs*1000);
 }
 
@@ -1783,6 +1809,7 @@ function toggleGEX(key,el){
 
 function clearGEX(){
   if(S_GEX.liveInterval){clearInterval(S_GEX.liveInterval);S_GEX.liveInterval=null;}
+  if(S_GEX.chainInterval){clearInterval(S_GEX.chainInterval);S_GEX.chainInterval=null;}
   S_GEX.data=[];S_GEX.contracts=[];S_GEX.loaded=false;
   g('gex-status').textContent='Cleared';
   g('dd-gex-badge').classList.add('hidden');
@@ -1798,7 +1825,10 @@ async function loadGEX(){
   try{
     const spot=S.candles.length?S.candles[S.candles.length-1].c:0;
     if(!spot)throw new Error('No price data');
-    S_GEX.contracts=[]; // clear old contracts before new fetch
+    // Don't wipe existing data yet — keep showing old data while fetching
+    const prevData=[...S_GEX.data];
+    const prevContracts=[...S_GEX.contracts];
+    S_GEX.contracts=[];
 
     const dates=gexGetDates();
     const expGte=dates.gte, expLte=dates.lte;
@@ -1850,7 +1880,23 @@ async function loadGEX(){
     });
     data.sort((a,b)=>a.strike-b.strike);
 
-    S_GEX.data=data;S_GEX.loaded=true;S_GEX.lastSpot=spot;
+    S_GEX.data=data.length>0?data:prevData;
+    S_GEX.contracts=S_GEX.contracts.length>0?S_GEX.contracts:prevContracts;
+    S_GEX.loaded=true;S_GEX.lastSpot=spot;S_GEX._ticker=S.ticker;
+
+    // Calculate flip strike directly from loaded data
+    const fData=S_GEX.data;
+    let cumGex=0,flipStrike=null,minAbsCum=Infinity,minAbsStrike=null;
+    for(let i=0;i<fData.length;i++){
+      const prev=cumGex;
+      cumGex+=fData[i].gex;
+      if(i>0&&((prev<0&&cumGex>=0)||(prev>0&&cumGex<=0))){
+        flipStrike=(fData[i-1].strike+fData[i].strike)/2;
+        break;
+      }
+      if(Math.abs(cumGex)<minAbsCum){minAbsCum=Math.abs(cumGex);minAbsStrike=fData[i].strike;}
+    }
+    S_GEX.flipStrike=flipStrike||(minAbsStrike||null);
     const totPos=data.filter(d=>d.gex>0).length;
     const totNeg=data.filter(d=>d.gex<0).length;
     status.innerHTML=`<span style="color:#22c55e">● Loaded</span>  ${data.length} strikes  (${S_GEX.contracts.length} contracts)<br>`+
@@ -1861,6 +1907,8 @@ async function loadGEX(){
     gexSetRefresh(); // start live recompute interval
     schedRender();
   }catch(e){
+    // Restore previous data so chart doesn't go blank on error
+    if(prevData&&prevData.length>0){S_GEX.data=prevData;S_GEX.contracts=prevContracts;}
     status.textContent='Error: '+e.message;
     btn.textContent='↓ Load GEX';btn.style.color='var(--red)';
     logErr('HTTP','GEX: '+e.message);
@@ -1868,71 +1916,66 @@ async function loadGEX(){
 }
 
 function drawGEX(ctx,toY,cW,cH){
-  if(!S_GEX.loaded||!S_GEX.data.length)return;
+  if(!S_GEX.data.length)return;  // just check data, not loaded flag
   if(!S_GEX.enabled.bars&&!S_GEX.enabled.flip&&!S_GEX.enabled.levels&&!S_GEX.enabled.table)return;
 
-  const barMaxW=Math.min(parseInt(g('gex-bar-width')?.value||40),cW*0.25);
+  const barMaxW=Math.min(parseInt(g("gex-bar-width")?.value||80),cW*0.40);
   const data=S_GEX.data;
   const spot=S.candles.length?S.candles[S.candles.length-1].c:0;
 
   // Max absolute GEX for scaling bars
   const maxAbsGex=Math.max(...data.map(d=>Math.abs(d.gex)),1);
 
-  // Find flip point = strike where cumulative GEX crosses zero
-  let flipStrike=null;
-  let cumGex=0;
-  for(let i=0;i<data.length;i++){
-    const prev=cumGex;
-    cumGex+=data[i].gex;
-    if(i>0&&((prev<0&&cumGex>=0)||(prev>0&&cumGex<=0))){
-      flipStrike=(data[i-1].strike+data[i].strike)/2;
-      break;
-    }
-  }
+  // Use cached flip strike — calculated in gexRecompute, persists permanently
+  const resolvedFlip=S_GEX.flipStrike||null;
 
   // ── GEX BARS on far right ────────────────────────────────────────────────
   if(S_GEX.enabled.bars){
     const barX=cW-barMaxW-2;
+    // Calculate min px gap between strikes to set bar height
+    const sortedStrikes=[...new Set(data.map(d=>d.strike))].sort((a,b)=>a-b);
+    let minGapPx=20;
+    for(let i=1;i<sortedStrikes.length;i++){
+      const gap=Math.abs(toY(sortedStrikes[i-1])-toY(sortedStrikes[i]));
+      if(gap>0&&gap<minGapPx)minGapPx=gap;
+    }
+    const barH=Math.max(2,Math.min(minGapPx*0.7,14)); // bar height = 70% of gap, max 14px
 
     data.forEach(d=>{
       const y=toY(d.strike);
       if(y<0||y>cH)return;
       const barW=Math.abs(d.gex/maxAbsGex)*barMaxW;
       const isPos=d.gex>=0;
-      // Thicker bar — 8px tall with bright fill
+      const half=barH/2;
       ctx.fillStyle=isPos?'rgba(34,197,94,0.5)':'rgba(239,68,68,0.5)';
-      ctx.fillRect(barX+barMaxW-barW,y-4,barW,8);
-      // Bright top edge line
+      ctx.fillRect(barX+barMaxW-barW,y-half,barW,barH);
       ctx.fillStyle=isPos?'rgba(34,197,94,0.95)':'rgba(239,68,68,0.95)';
-      ctx.fillRect(barX+barMaxW-barW,y-4,Math.max(1,barW),2);
+      ctx.fillRect(barX+barMaxW-barW,y-half,Math.max(1,barW),Math.max(1,barH*0.25));
     });
 
-    // Axis line
     ctx.strokeStyle='#253554';ctx.lineWidth=0.5;
     ctx.beginPath();ctx.moveTo(barX+barMaxW,0);ctx.lineTo(barX+barMaxW,cH);ctx.stroke();
-
-    // Label
     ctx.font='bold 9px IBM Plex Mono';ctx.textAlign='center';ctx.fillStyle='#6b7a99';
     ctx.fillText('GEX',barX+barMaxW/2,10);
   }
 
   // ── FLIP LEVEL ─────────────────────────────────────────────────────────
-  if(S_GEX.enabled.flip&&flipStrike){
-    const y=toY(flipStrike);
+  if(S_GEX.enabled.flip&&resolvedFlip){
+    const y=toY(resolvedFlip);
     if(y>=0&&y<=cH){
-      ctx.strokeStyle='#f59e0bcc';ctx.lineWidth=1.5;ctx.setLineDash([6,3]);
+      ctx.strokeStyle='#84cc16cc';ctx.lineWidth=1.5;ctx.setLineDash([6,3]);
       ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();
       ctx.setLineDash([]);
       ctx.font='bold 10px IBM Plex Mono';ctx.textAlign='left';
-      const lbl=`GEX FLIP $${flipStrike.toFixed(2)}`;
+      const lbl=`GEX FLIP $${resolvedFlip.toFixed(2)}`;
       const tw=ctx.measureText(lbl).width;
       ctx.fillStyle='rgba(13,21,38,0.88)';
       ctx.beginPath();if(ctx.roundRect)ctx.roundRect(4,y-11,tw+10,13,2);else ctx.rect(4,y-11,tw+10,13);ctx.fill();
-      ctx.fillStyle='#f59e0b';ctx.fillText(lbl,9,y);
+      ctx.fillStyle='#84cc16';ctx.fillText(lbl,9,y);
     }
   }
 
-  // ── KEY STRIKE LINES — top 5 by abs GEX ────────────────────────────────
+  // ── KEY STRIKE LABELS — single line: +$234.9B @ $755  05/28 ─────────────
   {
     const top5=[...data].sort((a,b)=>Math.abs(b.gex)-Math.abs(a.gex)).slice(0,5);
     top5.forEach((d,rank)=>{
@@ -1940,51 +1983,38 @@ function drawGEX(ctx,toY,cW,cH){
       const isPos=d.gex>=0;
       const fmtG=v=>Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(1)+'B':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1e3).toFixed(0)+'K';
 
-      // Horizontal line — only when key strikes enabled
       if(S_GEX.enabled.levels){
-        const col=isPos?'#22c55ecc':'#ef4444cc';
-        ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash([4,4]);
-        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();
-        ctx.setLineDash([]);
+        ctx.strokeStyle=isPos?'#22c55ecc':'#ef4444cc';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();ctx.setLineDash([]);
       }
 
-      // Strike + $ label — ALWAYS shown regardless of toggle
-      const lbl=`${isPos?'+':''}${fmtG(d.gex)} @ $${d.strike.toFixed(0)}`;
+      // Single line: +$234.9B @ $755  05/28
+      const exp=d.exp?'  '+d.exp.slice(5).replace('-','/'):'';
+      const lbl=`${isPos?'+':''}${fmtG(d.gex)} @ $${d.strike.toFixed(0)}${exp}`;
       ctx.font='bold 10px IBM Plex Mono';ctx.textAlign='right';
       const tw=ctx.measureText(lbl).width;
-      ctx.fillStyle='rgba(13,21,38,0.85)';
-      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(cW-barMaxW-tw-16,y-10,tw+8,13,2);else ctx.rect(cW-barMaxW-tw-16,y-10,tw+8,13);ctx.fill();
+      const lx=cW-barMaxW-14;
+      // Dark pill background
+      ctx.fillStyle='rgba(10,15,30,0.82)';
+      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(lx-tw-2,y-8,tw+8,13,2);else ctx.rect(lx-tw-2,y-8,tw+8,13);ctx.fill();
       ctx.fillStyle=isPos?'#4ade80':'#f87171';
-      ctx.fillText(lbl,cW-barMaxW-10,y);
+      ctx.fillText(lbl,lx,y+2);
     });
   }
 
-  // ── RANK LABELS + EXPIRY inside/beside GEX bars ──────────────────────────
+  // ── RANK # inside GEX bars ───────────────────────────────────────────────
   if(S_GEX.enabled.bars){
     const top10=[...data].sort((a,b)=>Math.abs(b.gex)-Math.abs(a.gex)).slice(0,10);
     const barX=cW-barMaxW-2;
     top10.forEach((d,rank)=>{
       const y=toY(d.strike);if(y<0||y>cH)return;
-      const isPos=d.gex>=0;
       const barW=Math.abs(d.gex/maxAbsGex)*barMaxW;
-      const col=isPos?'#86efac':'#fca5a5';
-
-      // Rank # inside bar
-      if(barW>=22){
-        ctx.font='bold 10px IBM Plex Mono';
-        ctx.fillStyle=col;
-        ctx.textAlign='left';
-        ctx.fillText(`#${rank+1}`,barX+barMaxW-barW+5,y+4);
-      }
-
-      // Expiry date to the LEFT of the bar (outside, before the bar starts)
-      if(d.exp){
-        const expShort=d.exp.slice(5).replace('-','/'); // MM/DD
-        ctx.font='bold 9px IBM Plex Mono';
-        ctx.fillStyle=isPos?'#4ade80':'#f87171';
-        ctx.textAlign='right';
-        ctx.fillText(expShort, barX+barMaxW-barW-4, y+3);
-      }
+      if(barW<22)return;
+      const isPos=d.gex>=0;
+      ctx.font='bold 10px IBM Plex Mono';
+      ctx.fillStyle=isPos?'#86efac':'#fca5a5';
+      ctx.textAlign='left';
+      ctx.fillText(`#${rank+1}`,barX+barMaxW-barW+5,y+4);
     });
   }
 
@@ -2333,9 +2363,14 @@ function toggleDD(which){
   ['ma','ind','pl','dp','gex','layout'].forEach(w=>{const p=g('dd-'+w+'-panel'),b=g('dd-'+w+'-btn');if(p)p.classList.remove('open');if(b)b.classList.remove('open')});
   if(!isOpen){
     panel.classList.add('open');btn.classList.add('open');
+    // Temporarily show to measure width
+    panel.style.visibility='hidden';panel.style.display='block';
     const r=btn.getBoundingClientRect();
+    const pw=panel.offsetWidth||240;
+    panel.style.visibility='';panel.style.display='';
     panel.style.top=(r.bottom+4)+'px';
-    if(which==='layout'){
+    // If panel would overflow right edge, align right edge to button right edge
+    if(r.left+pw>window.innerWidth-8){
       panel.style.left='auto';
       panel.style.right=(window.innerWidth-r.right)+'px';
     } else {
@@ -2365,20 +2400,22 @@ function setLayout(mode, el){
   const subPanels=g('sub-panels');
 
   if(mode===1){
-    // Single chart — show original chart-wrap, hide grid
+    // Single chart — show original chart-wrap, hide grid, restore bar2
     grid.className='';
     grid.style.display='none';
     grid.innerHTML='';
     single.style.display='';
     subPanels.style.display='';
-    g('layout-icon').textContent='⊞';
+    const bar2=g('bar2');if(bar2)bar2.style.display='';
+    g('layout-icon').textContent='⬜';
     schedRender();
     return;
   }
 
-  // Multi-chart — hide single, show grid
+  // Multi-chart — hide single chart, hide main bar2, show grid
   single.style.display='none';
   subPanels.style.display='none';
+  const bar2=g('bar2');if(bar2)bar2.style.display='none';
 
   // Set grid class
   const classMap={'2h':'layout-2h','2v':'layout-2v',4:'layout-4',6:'layout-6'};
@@ -2398,32 +2435,21 @@ function setLayout(mode, el){
     pane.className='chart-pane';
     pane.dataset.idx=i;
 
-    // Mini header with editable ticker
-    const hdr=document.createElement('div');
-    hdr.className='chart-pane-header';
-    hdr.innerHTML=`
-      <input class="chart-pane-ticker" value="${ticker}" title="Change ticker — press Enter"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();changePaneTicker(this)}"
-        onclick="event.stopPropagation()" onfocus="this.select()"/>
-      <span style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-left:2px">↵ to load</span>
-    `;
-    pane.appendChild(hdr);
-
-    // iframe — load same page with ticker param, strip bar1/bar2 via hash
+    // iframe loads same page in pane mode — bar1 hidden, bar2 visible as pane menu
     const iframe=document.createElement('iframe');
-    // Pass ticker via URL param; the iframe page reads it and loads that ticker
     const src=window.location.href.split('?')[0]+'?pane=1&ticker='+encodeURIComponent(ticker)+'&t='+Date.now();
     iframe.src=src;
-    iframe.style.cssText='width:100%;height:calc(100% - 22px);margin-top:22px;border:none;display:block';
+    iframe.style.cssText='width:100%;height:100%;border:none;display:block';
     iframe.dataset.ticker=ticker;
     pane.appendChild(iframe);
     grid.appendChild(pane);
   }
 
-  // Force grid height
-  const b1=g('bar1'),b2=g('bar2');
-  const usedH=(b1?b1.offsetHeight:60)+(b2?b2.offsetHeight:34);
+  // Force grid height — only bar1 visible in multi mode
+  const b1=g('bar1');
+  const usedH=b1?b1.offsetHeight:60;
   grid.style.height=(window.innerHeight-usedH)+'px';
+  grid.style.flex='none';
 }
 
 function changePaneTicker(input){
@@ -2441,6 +2467,7 @@ function changePaneTicker(input){
 // On iframe load — if this page is loaded as a pane, hide bar1/bar2 and load ticker from param
 
 function updateDDBadges(){
+  const maCt=S.maLines.filter(m=>m.active).length;
   const indCt=['vol','vwap','bb','macd','rsi','cci','mcdx','obv','ttm'].filter(k=>S.indicators[k]).length;
   const plCt=Object.values(S.priceLevels).filter(Boolean).length;
   const dpCt=Object.values(S.darkPool).filter(Boolean).length;
@@ -2661,17 +2688,15 @@ function startApp(){
   setInterval(silentRefresh,30000);setInterval(loadIndexBar,60000);
   wsConnect();
   loadTicker('SPY');loadIndexBar();
-  // Start GEX auto-refresh loop — will activate once data is loaded
-  setTimeout(gexSetRefresh, 2000);
+  // GEX refresh starts automatically after loadGEX() is called manually
 }
 
 // LOGIN DISABLED FOR TESTING
 g('login-overlay').classList.add('hidden');
-// In pane mode hide bars so iframe is pure chart
+// In pane mode: hide bar1 (index/status bar) but keep bar2 (controls) for per-pane menus
 if(_isPaneMode){
-  const b1=g('bar1'),b2=g('bar2');
+  const b1=g('bar1');
   if(b1)b1.style.display='none';
-  if(b2)b2.style.display='none';
 }
 // Force chart height
 (function forceHeight(){
@@ -2679,10 +2704,15 @@ if(_isPaneMode){
   function calcH(){
     const sp=g('sub-panels');
     const subH=sp?sp.offsetHeight:0;
-    if(_isPaneMode)return Math.max(200,window.innerHeight-subH);
+    if(_isPaneMode){
+      // Pane mode: only bar2 is visible
+      const bar2=g('bar2');
+      const b2H=bar2?bar2.offsetHeight:34;
+      return Math.max(100,window.innerHeight-b2H-subH);
+    }
     const bar1=g('bar1'),bar2=g('bar2');
     const barsH=(bar1?bar1.offsetHeight:60)+(bar2?bar2.offsetHeight:34);
-    return Math.max(200,window.innerHeight-barsH-subH);
+    return Math.max(100,window.innerHeight-barsH-subH);
   }
   wrap.style.height=calcH()+'px';
   wrap.style.flex='none';
