@@ -16,7 +16,7 @@
   --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
 }
 html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px}
-  #app{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
+  #app{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;overflow:hidden}
   #bar1{height:60px;flex:0 0 60px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:6px;overflow:hidden;user-select:none;position:relative;z-index:50}
   #bar2{height:34px;flex:0 0 34px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:8px;overflow:visible;user-select:none;position:relative;z-index:100}
   #chart-wrap{flex:1 1 0%;min-height:0;position:relative;overflow:hidden;background:var(--bg);user-select:none;cursor:crosshair}
@@ -66,7 +66,19 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .dd-btn.open .dd-arrow{transform:rotate(180deg)}
 .dd-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-size:8px;font-weight:700;min-width:14px;height:14px;border-radius:7px;padding:0 3px;margin-left:1px}
 .dd-badge.hidden{display:none}
-.dd-panel{position:absolute;top:calc(100% + 4px);left:0;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:6px 0;z-index:200;min-width:160px;box-shadow:0 8px 24px #00000066;display:none}
+.dd-panel{position:fixed;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:6px 0;z-index:200;min-width:160px;box-shadow:0 8px 24px #00000066;display:none;max-height:calc(100vh - 100px);overflow-y:auto}
+  #multi-grid{display:none;gap:2px;background:#000;box-sizing:border-box}
+  #multi-grid.layout-2h{display:grid;grid-template-columns:1fr 1fr}
+  #multi-grid.layout-2v{display:grid;grid-template-rows:1fr 1fr}
+  #multi-grid.layout-4{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+  #multi-grid.layout-6{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr}
+  .chart-pane{position:relative;overflow:hidden;background:var(--bg);min-height:0}
+  .chart-pane iframe{width:100%;height:100%;border:none;display:block}
+  .chart-pane-header{position:absolute;top:0;left:0;right:0;height:22px;background:rgba(13,21,38,0.92);display:flex;align-items:center;padding:0 6px;gap:6px;z-index:10;border-bottom:1px solid var(--border)}
+  .chart-pane-ticker{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text);background:transparent;border:none;width:70px;outline:none;cursor:pointer}
+  .chart-pane-ticker:hover{color:var(--accent)}
+  .chart-pane-close{font-family:var(--mono);font-size:9px;color:var(--text3);background:transparent;border:none;cursor:pointer;margin-left:auto;padding:0 2px}
+  .chart-pane-close:hover{color:var(--red)}
 .dd-panel.open{display:block}
 .dd-item{display:flex;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;transition:background .1s;user-select:none}
 .dd-item:hover{background:var(--bg4)}
@@ -263,15 +275,22 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     </div>
     <!-- Dark Pool Dropdown -->
     <div class="dd-wrap"><div class="dd-btn" id="dd-dp-btn" onclick="toggleDD('dp')">Dark Pool <span class="dd-badge hidden" id="dd-dp-badge">0</span><span class="dd-arrow">▾</span></div>
-      <div class="dd-panel" id="dd-dp-panel" style="min-width:220px">
-        <div style="padding:4px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Show Prints</div>
+      <div class="dd-panel" id="dd-dp-panel" style="min-width:230px">
+
+        <!-- LIVE STATUS -->
+        <div style="padding:4px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Live Status</div>
+        <div id="dp-status" style="padding:2px 12px 8px;font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.6;border-bottom:1px solid var(--border)">Waiting for data…</div>
+
+        <!-- SHOW PRINTS -->
+        <div style="padding:6px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Show Prints</div>
         <div class="dd-item dp-small"  onclick="toggleDP('small',this)"> <span class="dd-check"></span><span class="dd-item-lbl">Small &nbsp;&nbsp;$100K – $500K</span></div>
         <div class="dd-item dp-med"    onclick="toggleDP('med',this)">   <span class="dd-check"></span><span class="dd-item-lbl">Med &nbsp;&nbsp;&nbsp;&nbsp;$500K – $2M</span></div>
         <div class="dd-item dp-large"  onclick="toggleDP('large',this)"> <span class="dd-check"></span><span class="dd-item-lbl">Large &nbsp;&nbsp;$2M – $10M</span></div>
         <div class="dd-divider"></div>
         <div class="dd-item dp-golden" onclick="toggleDP('golden',this)"><span class="dd-check"></span><span class="dd-item-lbl">⭐ GOLDEN &nbsp;$10M+</span></div>
+
+        <!-- DATE RANGE -->
         <div class="dd-divider"></div>
-        <!-- Date range -->
         <div style="padding:6px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Date Range</div>
         <div style="padding:2px 12px 4px;display:flex;flex-direction:column;gap:5px">
           <div style="display:flex;align-items:center;gap:6px">
@@ -290,10 +309,18 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
             <button onclick="dpClearDates();event.stopPropagation()" style="flex:1;font-family:var(--mono);font-size:8px;padding:2px 0;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer">Clear</button>
           </div>
         </div>
+
+        <!-- LOAD / CLEAR -->
         <div class="dd-divider"></div>
-        <!-- Print Level Lines -->
+        <div style="padding:6px 12px;display:flex;gap:6px;align-items:center">
+          <button id="dp-load-btn" onclick="loadDarkPool()" style="flex:1;font-family:var(--mono);font-size:9px;font-weight:600;padding:4px 0;border-radius:3px;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);cursor:pointer">↓ Load Historical</button>
+          <button onclick="clearDarkPool()" style="font-family:var(--mono);font-size:9px;padding:4px 8px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer">Clear</button>
+        </div>
+
+        <!-- PRINT LEVEL LINES -->
+        <div class="dd-divider"></div>
         <div style="padding:6px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Print Level Lines</div>
-        <div style="padding:2px 12px 6px;display:flex;flex-direction:column;gap:6px">
+        <div style="padding:2px 12px 8px;display:flex;flex-direction:column;gap:6px">
           <div class="dd-item dp-levels" id="dp-levels-item" onclick="toggleDPLevels(this)" style="padding:4px 0">
             <span class="dd-check"></span>
             <span class="dd-item-lbl" style="color:var(--text2)">Show Level Lines</span>
@@ -305,14 +332,92 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
               onkeydown="event.stopPropagation()"
               style="width:64px;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:10px;font-weight:600;padding:3px 6px;border-radius:3px;outline:none;text-align:right;-moz-appearance:textfield"/>
           </div>
+          <div style="font-family:var(--mono);font-size:8px;color:var(--text3);line-height:1.5">Merges prints within ± tolerance into one level</div>
+        </div>
+
+      </div>
+    </div>
+    <!-- GEX Dropdown -->
+    <div class="dd-wrap"><div class="dd-btn" id="dd-gex-btn" onclick="toggleDD('gex')">GEX <span class="dd-badge hidden" id="dd-gex-badge">0</span><span class="dd-arrow">▾</span></div>
+      <div class="dd-panel" id="dd-gex-panel" style="min-width:240px">
+
+        <!-- STATUS -->
+        <div style="padding:4px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Status</div>
+        <div id="gex-status" style="padding:2px 12px 8px;font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.6;border-bottom:1px solid var(--border)">Not loaded</div>
+
+        <!-- DISPLAY -->
+        <div style="padding:6px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Display</div>
+        <div class="dd-item gex-bars active" id="gex-bars-item" onclick="toggleGEX('bars',this)"><span class="dd-check"></span><span class="dd-item-lbl">GEX Bars (right side)</span></div>
+        <div class="dd-item gex-flip" id="gex-flip-item" onclick="toggleGEX('flip',this)"><span class="dd-check"></span><span class="dd-item-lbl">Flip Level line</span></div>
+        <div class="dd-item gex-levels" id="gex-levels-item" onclick="toggleGEX('levels',this)"><span class="dd-check"></span><span class="dd-item-lbl">Key Strike lines</span></div>
+        <div class="dd-item gex-table" id="gex-table-item" onclick="toggleGEX('table',this)"><span class="dd-check"></span><span class="dd-item-lbl">Strike Table (ranked)</span></div>
+        <div class="dd-divider"></div>
+
+        <!-- SETTINGS -->
+        <div style="padding:6px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Settings</div>
+        <div style="padding:2px 12px 8px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3);flex-shrink:0">Expiry</span>
+            <select id="gex-expiry" onclick="event.stopPropagation()" onchange="gexExpiryChange();event.stopPropagation()"
+              style="flex:1;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 5px;border-radius:3px;outline:none">
+              <option value="0dte">0 DTE (today only)</option>
+              <option value="weekly" selected>This week (to Friday)</option>
+              <option value="1mo">1 Month out</option>
+              <option value="3mo">3 Months out</option>
+              <option value="6mo">6 Months out</option>
+              <option value="1yr">1 Year out</option>
+              <option value="custom">Custom range…</option>
+            </select>
+          </div>
+          <!-- Custom date range — shown only when custom is selected -->
+          <div id="gex-custom-dates" style="display:none;flex-direction:column;gap:4px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-family:var(--mono);font-size:9px;color:var(--text3);width:28px;flex-shrink:0">From</span>
+              <input id="gex-from" type="date" onclick="event.stopPropagation()" oninput="event.stopPropagation()"
+                style="flex:1;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 5px;border-radius:3px;outline:none;color-scheme:dark"/>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-family:var(--mono);font-size:9px;color:var(--text3);width:28px;flex-shrink:0">To</span>
+              <input id="gex-to" type="date" onclick="event.stopPropagation()" oninput="event.stopPropagation()"
+                style="flex:1;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 5px;border-radius:3px;outline:none;color-scheme:dark"/>
+            </div>
+          </div>
+          <!-- Resolved date range display -->
+          <div id="gex-date-preview" style="font-family:var(--mono);font-size:8px;color:var(--accent);line-height:1.4"></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3);flex-shrink:0">Bar Width</span>
+            <input id="gex-bar-width" type="number" min="4" max="80" step="2" value="40"
+              onclick="event.stopPropagation()" oninput="schedRender();event.stopPropagation()"
+              onkeydown="event.stopPropagation()"
+              style="width:52px;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 6px;border-radius:3px;outline:none;text-align:right;-moz-appearance:textfield"/>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">px</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text3);flex-shrink:0">Live Refresh</span>
+            <select id="gex-refresh" onclick="event.stopPropagation()" onchange="gexSetRefresh();event.stopPropagation()"
+              style="flex:1;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:9px;padding:3px 5px;border-radius:3px;outline:none">
+              <option value="0">Off — manual only</option>
+              <option value="3" selected>Every 3s</option>
+              <option value="5">Every 5s</option>
+              <option value="10">Every 10s</option>
+              <option value="30">Every 30s</option>
+              <option value="60">Every 60s</option>
+            </select>
+          </div>
           <div style="font-family:var(--mono);font-size:8px;color:var(--text3);line-height:1.5">
-            Merges prints within ± tolerance<br>into one level line with net total
+            GEX = Gamma × OI × 100 × spot²<br>
+            Green = +GEX (MM short gamma)<br>
+            Red = −GEX (MM long gamma)
           </div>
         </div>
-          <button id="dp-load-btn" onclick="loadDarkPool()" style="flex:1;font-family:var(--mono);font-size:9px;font-weight:600;padding:4px 0;border-radius:3px;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);cursor:pointer">↓ Load Prints</button>
-          <button onclick="clearDarkPool()" style="font-family:var(--mono);font-size:9px;padding:4px 8px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer">Clear</button>
+        <div class="dd-divider"></div>
+
+        <!-- LOAD -->
+        <div style="padding:6px 12px 8px;display:flex;gap:6px">
+          <button id="gex-load-btn" onclick="loadGEX()" style="flex:1;font-family:var(--mono);font-size:9px;font-weight:600;padding:4px 0;border-radius:3px;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);cursor:pointer">↓ Load GEX</button>
+          <button onclick="clearGEX()" style="font-family:var(--mono);font-size:9px;padding:4px 8px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer">Clear</button>
         </div>
-        <div id="dp-status" style="padding:2px 12px 6px;font-family:var(--mono);font-size:9px;color:var(--text3);line-height:1.5"></div>
+
       </div>
     </div>
     <div class="ohlcv-bar">
@@ -325,8 +430,24 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <div class="bid-ask"><span class="ba-lbl">ASK</span><span id="ba-ask">—</span></div>
     </div>
     <button id="err-log-btn" onclick="toggleErrLog()" title="Error log">⚠ LOG<span id="err-badge"></span></button>
+    <!-- Layout picker -->
+    <div class="dd-wrap" style="margin-left:auto">
+      <div class="dd-btn" id="dd-layout-btn" onclick="toggleDD('layout')" title="Chart Layout" style="padding:4px 8px">
+        <span id="layout-icon">⊞</span> <span style="font-size:9px">Layout</span> <span class="dd-arrow">▾</span>
+      </div>
+      <div class="dd-panel" id="dd-layout-panel" style="min-width:200px;right:0;left:auto">
+        <div style="padding:4px 12px 2px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase">Chart Layout</div>
+        <div class="dd-item layout-opt active" id="layout-1" onclick="setLayout(1,this)"><span class="dd-check"></span><span class="dd-item-lbl">⬜ 1 Chart</span></div>
+        <div class="dd-item layout-opt" id="layout-2h" onclick="setLayout('2h',this)"><span class="dd-check"></span><span class="dd-item-lbl">⬜⬜ 2 Charts — Side by Side</span></div>
+        <div class="dd-item layout-opt" id="layout-2v" onclick="setLayout('2v',this)"><span class="dd-check"></span><span class="dd-item-lbl">🟦<br style="display:none">🟦 2 Charts — Stacked</span></div>
+        <div class="dd-item layout-opt" id="layout-4" onclick="setLayout(4,this)"><span class="dd-check"></span><span class="dd-item-lbl">⊞ 4 Charts — Quad Grid</span></div>
+        <div class="dd-item layout-opt" id="layout-6" onclick="setLayout(6,this)"><span class="dd-check"></span><span class="dd-item-lbl">⊟ 6 Charts — 3×2 Grid</span></div>
+      </div>
+      </div>
   </div>
-  <!-- CHART -->
+  <!-- MULTI-CHART GRID (hidden in 1-chart mode) -->
+  <div id="multi-grid" style="display:none;flex:1 1 0%;min-height:0;overflow:hidden"></div>
+  <!-- CHART (single mode) -->
   <div id="chart-wrap">
     <canvas id="main-canvas"></canvas>
     <canvas id="overlay-canvas" style="pointer-events:none"></canvas>
@@ -346,15 +467,36 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 'use strict';
 const API_KEY='OW0lbbc6W2lwf1zG5KmMzeQg2ispQ3sR';
 const BASE='https://api.polygon.io';
-const PRICE_W=72,TIME_H=22,BASE_STEP=11;
-const TZ='America/Chicago'; // CST/CDT
+const PRICE_W=72,TIME_H=34,BASE_STEP=11;
+const TZ='America/Chicago';
+// Pane mode detection — must be at top so all functions can reference it
+const _paneParams=new URLSearchParams(window.location.search);
+const _isPaneMode=_paneParams.get('pane')==='1';
+const _paneTicker=_paneParams.get('ticker')||'SPY'; // CST/CDT
 
 // ── TIMEZONE HELPER ───────────────────────────────────────────────────────────
-// Returns a Date object adjusted to CST — use .getHours()/.getMinutes() etc.
-function toCST(ms){return new Date(new Date(ms).toLocaleString('en-US',{timeZone:TZ}))}
-// Format a timestamp as HH:MM in CST
+// Uses Intl.DateTimeFormat to extract CST/CDT fields reliably — no locale string parsing
+const _cstFmt=new Intl.DateTimeFormat('en-US',{
+  timeZone:TZ,
+  year:'numeric',month:'2-digit',day:'2-digit',
+  hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false
+});
+function toCST(ms){
+  const p=_cstFmt.formatToParts(typeof ms==='number'?ms:Number(ms));
+  const get=t=>parseInt(p.find(x=>x.type===t)?.value||'0');
+  // Build a plain object with CST fields — getHours/getDate etc mimic Date API
+  const h=get('hour')===24?0:get('hour');
+  return{
+    getFullYear:()=>get('year'),
+    getMonth:()=>get('month')-1,
+    getDate:()=>get('day'),
+    getDay:()=>new Date(get('year'),get('month')-1,get('day')).getDay(),
+    getHours:()=>h,
+    getMinutes:()=>get('minute'),
+    getSeconds:()=>get('second'),
+  };
+}
 function fmtTimeCST(ms){const d=toCST(ms);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
-// Format as HH:MM:SS in CST
 function fmtTimeCSTSec(ms){const d=toCST(ms);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`}
 
 // ── STATE ────────────────────────────────────────────────────────────────────
@@ -514,7 +656,11 @@ async function loadTicker(ticker){
     setTimeout(()=>{
       fetchBidAsk(S.ticker);
       loadIndexBar();
-      autoLoadDPToday(); // dark pool backfill deferred so chart shows instantly
+      autoLoadDPToday();
+      // Auto-load GEX if enabled (has data or first load)
+      if(S_GEX.loaded||g('gex-bars-item')?.classList.contains('active')){
+        loadGEX();
+      }
     }, 50);
   }catch(e){hideLoad();logErr('HTTP',e.message)}
 }
@@ -591,6 +737,21 @@ function renderAll(){
 
 function renderMain(){
   const wrap=g('chart-wrap');
+  // Self-heal height every frame
+  (function ensureHeight(){
+    if(_isPaneMode){
+      // Pane mode: full window height
+      const h=Math.max(200,window.innerHeight);
+      if(Math.abs(wrap.clientHeight-h)>2){wrap.style.height=h+'px';wrap.style.flex='none';}
+      return;
+    }
+    // Normal mode: window height minus bar1+bar2 heights
+    const bar1=g('bar1'),bar2=g('bar2'),sp=g('sub-panels');
+    const barsH=(bar1?bar1.offsetHeight:60)+(bar2?bar2.offsetHeight:34);
+    const subH=sp?sp.offsetHeight:0;
+    const h=Math.max(200,window.innerHeight-barsH-subH);
+    if(Math.abs(wrap.clientHeight-h)>2){wrap.style.height=h+'px';wrap.style.flex='none';}
+  })();
   const W=wrap.clientWidth,H=wrap.clientHeight;
   if(!W||!H)return;
   const dpr=window.devicePixelRatio||1;
@@ -601,6 +762,7 @@ function renderMain(){
   ctx.scale(dpr,dpr);
 
   const cW=W-PRICE_W,cH=H-TIME_H;
+  const cl=S.candles.map(c=>c.c); // close prices array used by indicators
   const step=BASE_STEP*S.scale;
   S.offset=Math.max(0,Math.min(S.offset,Math.max(0,S.candles.length-1)));
   const vs=Math.max(0,Math.floor(S.offset));
@@ -655,23 +817,34 @@ function renderMain(){
     }
   }
 
-  // Time axis
-  const cl=S.candles.map(c=>c.c);
-  ctx.fillStyle='#c8d4e8';ctx.font='9px IBM Plex Mono';ctx.textAlign='center';
+  // ── Time axis ─────────────────────────────────────────────────────────────
   const lsp=Math.max(1,Math.ceil(70/step));
+  const isDaily=S.tf==='D'||S.tf==='W';
+  const isMultiHour=S.tf==='60'||S.tf==='240'||S.tf==='360D';
+  const MONTH_NAMES_T=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // ── Row 1: time/date tick labels ────────────────────────────────────────
   for(let i=vs;i<=ve;i++){
     if(i%lsp!==0)continue;
     const c=S.candles[i];if(!c)continue;
     const x=toX(i)+step/2;if(x<5||x>cW-5)continue;
     const d=toCST(c.t);
     let lbl;
-    if(S.tf==='D'||S.tf==='W')lbl=`${d.getMonth()+1}/${d.getDate()}`;
-    else if(S.tf==='60'||S.tf==='240'||S.tf==='360D')lbl=`${String(d.getHours()).padStart(2,'0')}:00`;
-    else lbl=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    ctx.fillText(lbl,x,cH+14);
+    if(isDaily)
+      lbl=`${MONTH_NAMES_T[d.getMonth()]} ${d.getDate()}`;
+    else if(isMultiHour)
+      lbl=`${String(d.getHours()).padStart(2,'0')}:00`;
+    else
+      lbl=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    ctx.fillStyle='#6b7a99';ctx.font='9px IBM Plex Mono';ctx.textAlign='center';
+    ctx.fillText(lbl,x,cH+13);
+    // Grid line
     ctx.strokeStyle='#172138';ctx.lineWidth=0.5;
     ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cH);ctx.stroke();
   }
+
+  // ── Row 2: date pills via shared function ─────────────────────────────
+  drawDateAxis(ctx,cW,cH,vs,ve,step,toX);
 
   // Extended hours shading + session dividers (intraday only)
   if(S.tf!=='D'&&S.tf!=='W'&&S.tf!=='360D'){
@@ -773,8 +946,11 @@ function renderMain(){
   // Dark Pool prints (drawn on top of candles, before axis overlay)
   try{drawDarkPool(ctx,toY,toX,cW,cH,step,vs,ve)}catch(e){console.error('darkPool:',e)}
 
-  // Dark Pool level lines (horizontal price levels with net total)
+  // Dark Pool level lines
   try{drawDPLevelLines(ctx,toY,cW,cH)}catch(e){console.error('dpLevels:',e)}
+
+  // Gamma Exposure
+  try{drawGEX(ctx,toY,cW,cH)}catch(e){console.error('gex:',e)}
   ctx.fillStyle='#3a4d6e';ctx.font='10px IBM Plex Mono';ctx.textAlign='center';
   ctx.fillText('⇕',cW+PRICE_W/2,cH/2+4);
 
@@ -1009,6 +1185,60 @@ function startSubResize(e,key,panel){e.preventDefault();e.stopPropagation();_sub
 window.addEventListener('mousemove',e=>{if(!_subRes)return;const{key,panel,startY,startH}=_subRes;const h=Math.max(40,Math.min(400,startH+e.clientY-startY));panel.style.height=h+'px';S.subPanelHeights[key]=h;schedRender()});
 window.addEventListener('mouseup',()=>{if(_subRes){_subRes=null;document.body.style.cursor='';document.body.style.userSelect=''}});
 
+// ── SHARED DATE AXIS ─────────────────────────────────────────────────────────
+function drawDateAxis(ctx, cW, cH, vs, ve, step, toX){
+  const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTH_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const isDaily=S.tf==='D'||S.tf==='W';
+  const seenPeriod=new Set();
+
+  for(let i=vs;i<=ve;i++){
+    const c=S.candles[i];if(!c)continue;
+    const d=toCST(c.t);
+    let periodKey,dateLbl,labelX;
+
+    if(isDaily){
+      // Daily/Weekly: label per month
+      periodKey=`${d.getFullYear()}-${d.getMonth()}`;
+      if(seenPeriod.has(periodKey))continue;
+      seenPeriod.add(periodKey);
+      dateLbl=`${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+      labelX=toX(i)+step/2;
+    } else {
+      // All intraday TFs: label per day, first candle of that day
+      periodKey=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      if(seenPeriod.has(periodKey))continue;
+      seenPeriod.add(periodKey);
+      dateLbl=`${DAY_NAMES[d.getDay()]} ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+      // Center label across the visible candles of this day
+      let lastX=toX(i)+step/2;
+      for(let j=i+1;j<=ve;j++){
+        const dj=toCST(S.candles[j]?.t||0);
+        const jKey=`${dj.getFullYear()}-${dj.getMonth()}-${dj.getDate()}`;
+        if(jKey!==periodKey)break;
+        lastX=toX(j)+step/2;
+      }
+      labelX=(toX(i)+step/2+lastX)/2;
+    }
+
+    if(labelX<0||labelX>cW)continue;
+    const lx=Math.min(Math.max(labelX,30),cW-30);
+
+    ctx.font='bold 9px IBM Plex Mono';
+    const tw=ctx.measureText(dateLbl).width;
+    ctx.fillStyle='rgba(20,30,55,0.92)';
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(lx-tw/2-5,cH+2,tw+10,13,2);
+    else ctx.rect(lx-tw/2-5,cH+2,tw+10,13);
+    ctx.fill();
+    ctx.fillStyle=isDaily?'#3b82f6':'#22c55e';
+    ctx.fillRect(lx-tw/2-5,cH+2,2,13);
+    ctx.fillStyle=isDaily?'#93c5fd':'#86efac';
+    ctx.textAlign='center';
+    ctx.fillText(dateLbl,lx,cH+12);
+  }
+}
+
 function renderSubs(){
   ['macd','rsi','cci','mcdx','obv','ttm'].forEach(k=>{
     if(!S.indicators[k])return;
@@ -1112,6 +1342,9 @@ function renderSubs(){
         }
       }
     }
+
+    // Date axis on bottom of every sub-panel
+    drawDateAxis(ctx,cW,H-16,vs,ve,step,toX);
   });
 }
 
@@ -1207,11 +1440,17 @@ function drawDPLevelLines(ctx,toY,cW,cH){
     ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();
     ctx.setLineDash([]);
 
-    // Left-side label: NET TOTAL @ PRICE
+    // Left-side label: NET TOTAL @ PRICE (or range if tolerance set)
     const net=fmtD(lv.totalDollar);
-    const lbl=`${net} @ $${lv.price.toFixed(2)}`;
     const countTxt=lv.count>1?` ×${lv.count}`:'';
-    const fullLbl=lbl+countTxt;
+    let pricePart;
+    if(tol>0&&lv.count>1){
+      // Show tolerance range: $100.00–$100.10
+      pricePart=`$${(lv.price-tol).toFixed(2)}–$${(lv.price+tol).toFixed(2)}`;
+    } else {
+      pricePart=`$${lv.price.toFixed(2)}`;
+    }
+    const fullLbl=`${net} @ ${pricePart}${countTxt}`;
 
     ctx.font=`bold ${lv.tier==='golden'?10:9}px IBM Plex Mono`;
     ctx.textAlign='left';
@@ -1279,12 +1518,13 @@ async function autoLoadDPToday(){
     S.dpTrades.forEach(t=>_dpLiveCount[t.tier]++);
     const total=S.dpTrades.length;
     if(st){
-      st.innerHTML=`<span style="color:#22c55e">● LIVE ${S.ticker} — today + real-time</span><br>`+
-        `${total} prints  `+
+      st.innerHTML=`<span style="color:#22c55e">● LIVE</span>  ${total} prints  `+
         `<span style="color:#fbbf24">⭐${_dpLiveCount.golden}</span>  `+
         `<span style="color:#3b82f6">L${_dpLiveCount.large}</span>  `+
         `<span style="color:#9ca3af">M${_dpLiveCount.med}</span>  `+
         `<span style="color:#6b7a99">S${_dpLiveCount.small}</span>`;
+      const dpB2=g('dd-dp-badge');
+      if(dpB2){dpB2.textContent=total;dpB2.classList.toggle('hidden',total===0);}
     }
     // Update dp-from/to to reflect today
     g('dp-from').value=today;g('dp-to').value=today;
@@ -1387,7 +1627,451 @@ async function loadDarkPool(){
   }
 }
 
-// ── DARK POOL TOOLTIP ────────────────────────────────────────────────────────
+// ── GEX DATE HELPERS ─────────────────────────────────────────────────────────
+// Returns next monthly options expiration (3rd Friday of the month)
+function thirdFriday(year, month){
+  // month is 0-indexed
+  let fridays=0;
+  for(let d=1;d<=31;d++){
+    const dt=new Date(year,month,d);
+    if(dt.getMonth()!==month)break;
+    if(dt.getDay()===5){fridays++;if(fridays===3)return dt;}
+  }
+  return new Date(year,month,21); // fallback
+}
+
+function gexGetDates(){
+  const mode=g('gex-expiry').value;
+  const today=toCST(Date.now());
+  const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const now=new Date();
+
+  if(mode==='0dte'){
+    return{gte:todayStr,lte:todayStr,label:'0 DTE — '+todayStr};
+  }
+  if(mode==='weekly'){
+    // Friday of current week (CST)
+    const day=today.getDay(); // 0=Sun
+    const daysToFri=day<=5?5-day:6; // if today is Sat, go to next Fri
+    const fri=new Date(now);fri.setDate(now.getDate()+daysToFri);
+    const friStr=fri.toISOString().slice(0,10);
+    return{gte:todayStr,lte:friStr,label:`This week  ${todayStr} → ${friStr}`};
+  }
+  if(mode==='1mo'){
+    // Next monthly options expiration (3rd Friday)
+    const m=now.getMonth(),y=now.getFullYear();
+    let exp=thirdFriday(y,m);
+    if(exp<=now)exp=thirdFriday(y,m+1); // already passed this month's
+    const expStr=exp.toISOString().slice(0,10);
+    return{gte:todayStr,lte:expStr,label:`1 Month  ${todayStr} → ${expStr}`};
+  }
+  if(mode==='3mo'){
+    const target=thirdFriday(now.getFullYear(),now.getMonth()+3);
+    const expStr=target.toISOString().slice(0,10);
+    return{gte:todayStr,lte:expStr,label:`3 Months  ${todayStr} → ${expStr}`};
+  }
+  if(mode==='6mo'){
+    const target=thirdFriday(now.getFullYear(),now.getMonth()+6);
+    const expStr=target.toISOString().slice(0,10);
+    return{gte:todayStr,lte:expStr,label:`6 Months  ${todayStr} → ${expStr}`};
+  }
+  if(mode==='1yr'){
+    const target=thirdFriday(now.getFullYear()+1,now.getMonth());
+    const expStr=target.toISOString().slice(0,10);
+    return{gte:todayStr,lte:expStr,label:`1 Year  ${todayStr} → ${expStr}`};
+  }
+  if(mode==='custom'){
+    const gte=g('gex-from').value||todayStr;
+    const lte=g('gex-to').value||todayStr;
+    return{gte,lte,label:`Custom  ${gte} → ${lte}`};
+  }
+  return{gte:todayStr,lte:todayStr,label:todayStr};
+}
+
+function gexExpiryChange(){
+  const mode=g('gex-expiry').value;
+  const customDates=g('gex-custom-dates');
+  customDates.style.display=mode==='custom'?'flex':'none';
+  if(mode!=='custom'){
+    const dates=gexGetDates();
+    const preview=g('gex-date-preview');
+    if(preview)preview.textContent=dates.label;
+  }
+}
+
+// ── GAMMA EXPOSURE (GEX) ─────────────────────────────────────────────────────
+const S_GEX={
+  data:[],          // [{strike, gex, callGex, putGex, oi, exp}] — recomputed live
+  contracts:[],     // [{strike, iv, oi, type, exp, t}] — raw chain, fetched once
+  enabled:{bars:true, flip:false, levels:false, table:false},
+  loaded:false,
+  lastSpot:0,       // last spot price we computed GEX at
+  liveInterval:null,
+};
+
+// ── BLACK-SCHOLES GAMMA ───────────────────────────────────────────────────────
+function bsGamma(S,K,iv,T){
+  // S=spot, K=strike, iv=implied vol (annualised), T=years to expiry
+  if(T<=0||iv<=0||S<=0||K<=0)return 0;
+  const r=0.045; // risk-free rate ~4.5%
+  const d1=(Math.log(S/K)+(r+iv*iv/2)*T)/(iv*Math.sqrt(T));
+  const pdf=Math.exp(-0.5*d1*d1)/Math.sqrt(2*Math.PI); // φ(d1)
+  return pdf/(S*iv*Math.sqrt(T));
+}
+
+// Recompute GEX from stored contracts using current spot price
+function gexRecompute(spot){
+  if(!S_GEX.contracts.length||!spot)return;
+  const now=Date.now();
+  const strikeMap=new Map();
+
+  S_GEX.contracts.forEach(c=>{
+    // Time to expiry in years
+    const expMs=new Date(c.exp).getTime();
+    const T=Math.max(0,(expMs-now)/(365.25*24*3600*1000));
+    // Recalculate gamma from current spot
+    const gamma=bsGamma(spot,c.strike,c.iv,T);
+    const gexVal=gamma*c.oi*100*(spot*spot);
+    if(!strikeMap.has(c.strike))strikeMap.set(c.strike,{callGex:0,putGex:0,callOI:0,putOI:0,expirations:new Set()});
+    const s=strikeMap.get(c.strike);
+    s.expirations.add(c.exp);
+    if(c.type==='call'){s.callGex+=gexVal;s.callOI+=c.oi}
+    else{s.putGex-=gexVal;s.putOI+=c.oi}
+  });
+
+  const data=[];
+  strikeMap.forEach((v,strike)=>{
+    const netGex=v.callGex+v.putGex;
+    const exps=[...v.expirations].sort();
+    data.push({strike,gex:netGex,callGex:v.callGex,putGex:v.putGex,oi:v.callOI+v.putOI,exp:exps[0]||''});
+  });
+  data.sort((a,b)=>a.strike-b.strike);
+  S_GEX.data=data;
+  S_GEX.lastSpot=spot;
+}
+
+function gexSetRefresh(){
+  // Clear any existing interval
+  if(S_GEX.liveInterval){clearInterval(S_GEX.liveInterval);S_GEX.liveInterval=null;}
+  const secs=parseInt(g('gex-refresh')?.value||'3');
+  if(secs===0||!S_GEX.loaded)return;
+  S_GEX.liveInterval=setInterval(()=>{
+    if(!S_GEX.contracts.length)return;
+    const spot=S.candles.length?S.candles[S.candles.length-1].c:0;
+    if(!spot||Math.abs(spot-S_GEX.lastSpot)<0.001)return; // skip if price unchanged
+    gexRecompute(spot);
+    schedRender();
+    // Update status with last refresh time
+    const st=g('gex-status');
+    if(st){
+      const d=toCST(Date.now());
+      const t=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+      const pos=S_GEX.data.filter(d=>d.gex>0).length;
+      const neg=S_GEX.data.filter(d=>d.gex<0).length;
+      st.innerHTML=`<span style="color:#22c55e">● LIVE</span>  ${S_GEX.data.length} strikes  <span style="color:#6b7a99">${t} CT</span><br>`+
+        `<span style="color:#22c55e">+GEX: ${pos}</span>  <span style="color:#ef4444">−GEX: ${neg}</span>  `+
+        `<span style="color:#6b7a99">spot $${spot.toFixed(2)}</span>`;
+    }
+  }, secs*1000);
+}
+
+function toggleGEX(key,el){
+  S_GEX.enabled[key]=!S_GEX.enabled[key];
+  el.classList.toggle('active',S_GEX.enabled[key]);
+  schedRender();
+}
+
+function clearGEX(){
+  if(S_GEX.liveInterval){clearInterval(S_GEX.liveInterval);S_GEX.liveInterval=null;}
+  S_GEX.data=[];S_GEX.contracts=[];S_GEX.loaded=false;
+  g('gex-status').textContent='Cleared';
+  g('dd-gex-badge').classList.add('hidden');
+  schedRender();
+}
+
+async function loadGEX(){
+  const btn=g('gex-load-btn');
+  const status=g('gex-status');
+  btn.textContent='Loading…';btn.style.color='var(--yellow)';btn.disabled=true;
+  status.textContent='Fetching option chain…';
+
+  try{
+    const spot=S.candles.length?S.candles[S.candles.length-1].c:0;
+    if(!spot)throw new Error('No price data');
+    S_GEX.contracts=[]; // clear old contracts before new fetch
+
+    const dates=gexGetDates();
+    const expGte=dates.gte, expLte=dates.lte;
+    g('gex-status').textContent=`Fetching ${dates.label}…`;
+
+    // Fetch option chain — paginate, filter near ATM (±15% of spot)
+    const strikeLo=(spot*0.85).toFixed(2);
+    const strikeHi=(spot*1.15).toFixed(2);
+    let url=`${BASE}/v3/snapshot/options/${S.ticker}?strike_price.gte=${strikeLo}&strike_price.lte=${strikeHi}&limit=250&apiKey=${API_KEY}`;
+    if(expGte)url+=`&expiration_date.gte=${expGte}`;
+    if(expLte)url+=`&expiration_date.lte=${expLte}`;
+
+    const strikeMap=new Map(); // strike → {callGex, putGex, callOI, putOI}
+    let pages=0;
+
+    while(url&&pages<8){
+      const j=await apiFetch(url);
+      const results=j.results||[];
+      results.forEach(r=>{
+        const strike=r.details?.strike_price;
+        const gamma=r.greeks?.gamma||0;
+        const iv=r.implied_volatility||r.greeks?.iv||0;
+        const oi=r.open_interest||0;
+        const type=r.details?.contract_type;
+        const exp=r.details?.expiration_date||'';
+        if(!strike||!oi)return;
+        // Store raw contract for live recompute
+        if(iv>0)S_GEX.contracts.push({strike,iv,oi,type,exp});
+        if(!gamma)return;
+        const gexVal=gamma*oi*100*(spot*spot);
+        if(!strikeMap.has(strike))strikeMap.set(strike,{callGex:0,putGex:0,callOI:0,putOI:0,expirations:new Set()});
+        const s=strikeMap.get(strike);
+        if(exp)s.expirations.add(exp);
+        if(type==='call'){s.callGex+=gexVal;s.callOI+=oi}
+        else if(type==='put'){s.putGex-=gexVal;s.putOI+=oi}
+      });
+      url=j.next_url?j.next_url+'&apiKey='+API_KEY:null;
+      pages++;
+    }
+
+    // Build sorted array
+    const data=[];
+    strikeMap.forEach((v,strike)=>{
+      const netGex=v.callGex+v.putGex;
+      // Pick the nearest expiration for display
+      const exps=[...v.expirations].sort();
+      const nearestExp=exps[0]||'';
+      data.push({strike,gex:netGex,callGex:v.callGex,putGex:v.putGex,oi:v.callOI+v.putOI,exp:nearestExp});
+    });
+    data.sort((a,b)=>a.strike-b.strike);
+
+    S_GEX.data=data;S_GEX.loaded=true;S_GEX.lastSpot=spot;
+    const totPos=data.filter(d=>d.gex>0).length;
+    const totNeg=data.filter(d=>d.gex<0).length;
+    status.innerHTML=`<span style="color:#22c55e">● Loaded</span>  ${data.length} strikes  (${S_GEX.contracts.length} contracts)<br>`+
+      `<span style="color:#22c55e">+GEX: ${totPos}</span>  <span style="color:#ef4444">−GEX: ${totNeg}</span>`;
+    const badge=g('dd-gex-badge');
+    badge.textContent=data.length;badge.classList.remove('hidden');
+    btn.textContent='↓ Load GEX';btn.style.color='var(--green)';
+    gexSetRefresh(); // start live recompute interval
+    schedRender();
+  }catch(e){
+    status.textContent='Error: '+e.message;
+    btn.textContent='↓ Load GEX';btn.style.color='var(--red)';
+    logErr('HTTP','GEX: '+e.message);
+  }finally{btn.disabled=false;}
+}
+
+function drawGEX(ctx,toY,cW,cH){
+  if(!S_GEX.loaded||!S_GEX.data.length)return;
+  if(!S_GEX.enabled.bars&&!S_GEX.enabled.flip&&!S_GEX.enabled.levels&&!S_GEX.enabled.table)return;
+
+  const barMaxW=Math.min(parseInt(g('gex-bar-width')?.value||40),cW*0.25);
+  const data=S_GEX.data;
+  const spot=S.candles.length?S.candles[S.candles.length-1].c:0;
+
+  // Max absolute GEX for scaling bars
+  const maxAbsGex=Math.max(...data.map(d=>Math.abs(d.gex)),1);
+
+  // Find flip point = strike where cumulative GEX crosses zero
+  let flipStrike=null;
+  let cumGex=0;
+  for(let i=0;i<data.length;i++){
+    const prev=cumGex;
+    cumGex+=data[i].gex;
+    if(i>0&&((prev<0&&cumGex>=0)||(prev>0&&cumGex<=0))){
+      flipStrike=(data[i-1].strike+data[i].strike)/2;
+      break;
+    }
+  }
+
+  // ── GEX BARS on far right ────────────────────────────────────────────────
+  if(S_GEX.enabled.bars){
+    const barX=cW-barMaxW-2;
+
+    data.forEach(d=>{
+      const y=toY(d.strike);
+      if(y<0||y>cH)return;
+      const barW=Math.abs(d.gex/maxAbsGex)*barMaxW;
+      const isPos=d.gex>=0;
+      // Thicker bar — 8px tall with bright fill
+      ctx.fillStyle=isPos?'rgba(34,197,94,0.5)':'rgba(239,68,68,0.5)';
+      ctx.fillRect(barX+barMaxW-barW,y-4,barW,8);
+      // Bright top edge line
+      ctx.fillStyle=isPos?'rgba(34,197,94,0.95)':'rgba(239,68,68,0.95)';
+      ctx.fillRect(barX+barMaxW-barW,y-4,Math.max(1,barW),2);
+    });
+
+    // Axis line
+    ctx.strokeStyle='#253554';ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(barX+barMaxW,0);ctx.lineTo(barX+barMaxW,cH);ctx.stroke();
+
+    // Label
+    ctx.font='bold 9px IBM Plex Mono';ctx.textAlign='center';ctx.fillStyle='#6b7a99';
+    ctx.fillText('GEX',barX+barMaxW/2,10);
+  }
+
+  // ── FLIP LEVEL ─────────────────────────────────────────────────────────
+  if(S_GEX.enabled.flip&&flipStrike){
+    const y=toY(flipStrike);
+    if(y>=0&&y<=cH){
+      ctx.strokeStyle='#f59e0bcc';ctx.lineWidth=1.5;ctx.setLineDash([6,3]);
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font='bold 10px IBM Plex Mono';ctx.textAlign='left';
+      const lbl=`GEX FLIP $${flipStrike.toFixed(2)}`;
+      const tw=ctx.measureText(lbl).width;
+      ctx.fillStyle='rgba(13,21,38,0.88)';
+      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(4,y-11,tw+10,13,2);else ctx.rect(4,y-11,tw+10,13);ctx.fill();
+      ctx.fillStyle='#f59e0b';ctx.fillText(lbl,9,y);
+    }
+  }
+
+  // ── KEY STRIKE LINES — top 5 by abs GEX ────────────────────────────────
+  {
+    const top5=[...data].sort((a,b)=>Math.abs(b.gex)-Math.abs(a.gex)).slice(0,5);
+    top5.forEach((d,rank)=>{
+      const y=toY(d.strike);if(y<0||y>cH)return;
+      const isPos=d.gex>=0;
+      const fmtG=v=>Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(1)+'B':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+(v/1e3).toFixed(0)+'K';
+
+      // Horizontal line — only when key strikes enabled
+      if(S_GEX.enabled.levels){
+        const col=isPos?'#22c55ecc':'#ef4444cc';
+        ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash([4,4]);
+        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Strike + $ label — ALWAYS shown regardless of toggle
+      const lbl=`${isPos?'+':''}${fmtG(d.gex)} @ $${d.strike.toFixed(0)}`;
+      ctx.font='bold 10px IBM Plex Mono';ctx.textAlign='right';
+      const tw=ctx.measureText(lbl).width;
+      ctx.fillStyle='rgba(13,21,38,0.85)';
+      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(cW-barMaxW-tw-16,y-10,tw+8,13,2);else ctx.rect(cW-barMaxW-tw-16,y-10,tw+8,13);ctx.fill();
+      ctx.fillStyle=isPos?'#4ade80':'#f87171';
+      ctx.fillText(lbl,cW-barMaxW-10,y);
+    });
+  }
+
+  // ── RANK LABELS + EXPIRY inside/beside GEX bars ──────────────────────────
+  if(S_GEX.enabled.bars){
+    const top10=[...data].sort((a,b)=>Math.abs(b.gex)-Math.abs(a.gex)).slice(0,10);
+    const barX=cW-barMaxW-2;
+    top10.forEach((d,rank)=>{
+      const y=toY(d.strike);if(y<0||y>cH)return;
+      const isPos=d.gex>=0;
+      const barW=Math.abs(d.gex/maxAbsGex)*barMaxW;
+      const col=isPos?'#86efac':'#fca5a5';
+
+      // Rank # inside bar
+      if(barW>=22){
+        ctx.font='bold 10px IBM Plex Mono';
+        ctx.fillStyle=col;
+        ctx.textAlign='left';
+        ctx.fillText(`#${rank+1}`,barX+barMaxW-barW+5,y+4);
+      }
+
+      // Expiry date to the LEFT of the bar (outside, before the bar starts)
+      if(d.exp){
+        const expShort=d.exp.slice(5).replace('-','/'); // MM/DD
+        ctx.font='bold 9px IBM Plex Mono';
+        ctx.fillStyle=isPos?'#4ade80':'#f87171';
+        ctx.textAlign='right';
+        ctx.fillText(expShort, barX+barMaxW-barW-4, y+3);
+      }
+    });
+  }
+
+  // ── STRIKE TABLE — ranked strongest to weakest ──────────────────────────
+  if(S_GEX.enabled.table&&data.length){
+    const top=Math.min(10,data.length);
+    const ranked=[...data].sort((a,b)=>Math.abs(b.gex)-Math.abs(a.gex)).slice(0,top);
+
+    const fmtT=v=>{
+      const abs=Math.abs(v);
+      const sign=v>=0?'+':'-';
+      if(abs>=1e9)return sign+'$'+(abs/1e9).toFixed(2)+'B';
+      if(abs>=1e6)return sign+'$'+(abs/1e6).toFixed(2)+'M';
+      return sign+'$'+(abs/1e3).toFixed(0)+'K';
+    };
+
+    const COL_W=[22,66,82,58];
+    const ROW_H=18,PAD=10;
+    const tableW=COL_W.reduce((a,b)=>a+b,0)+PAD*2;
+    const tableH=ROW_H*(top+1)+PAD*2+8;
+    const tx=10,ty=30;
+
+    // Shadow + background
+    ctx.fillStyle='rgba(10,15,30,0.94)';
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(tx,ty,tableW,tableH,4);
+    else ctx.rect(tx,ty,tableW,tableH);
+    ctx.fill();
+    ctx.strokeStyle='#253554';ctx.lineWidth=1;
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(tx,ty,tableW,tableH,4);
+    else ctx.rect(tx,ty,tableW,tableH);
+    ctx.stroke();
+
+    // Title
+    ctx.font='bold 10px IBM Plex Mono';
+    ctx.fillStyle='#4b6a99';ctx.textAlign='left';
+    ctx.fillText(`GEX TOP ${top} STRIKES`,tx+PAD,ty+13);
+
+    // Header row
+    const hy=ty+PAD+18;
+    ctx.strokeStyle='#1e2d47';ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(tx+4,hy+3);ctx.lineTo(tx+tableW-4,hy+3);ctx.stroke();
+    ctx.font='bold 9px IBM Plex Mono';ctx.fillStyle='#3a4d6e';
+    let hx=tx+PAD;
+    ['#','STRIKE','GEX $VAL','EXPIRY'].forEach((h,i)=>{
+      ctx.textAlign='left';ctx.fillText(h,hx,hy);
+      hx+=COL_W[i];
+    });
+
+    // Data rows
+    ranked.forEach((d,idx)=>{
+      const ry=hy+8+idx*ROW_H;
+      const isPos=d.gex>=0;
+      const rowCol=isPos?'#22c55e':'#ef4444';
+
+      // Subtle row tint for top 3
+      if(idx<3){
+        ctx.fillStyle=isPos?'rgba(34,197,94,0.06)':'rgba(239,68,68,0.06)';
+        ctx.fillRect(tx+2,ry,tableW-4,ROW_H-1);
+      }
+
+      let colX=tx+PAD;
+      ctx.font=idx===0?'bold 11px IBM Plex Mono':'10px IBM Plex Mono';
+
+      // Rank — gold/silver/bronze for top 3
+      ctx.fillStyle=idx===0?'#f59e0b':idx===1?'#9ca3af':idx===2?'#b45309':'#3a4d6e';
+      ctx.textAlign='left';ctx.fillText(String(idx+1),colX,ry+12);
+      colX+=COL_W[0];
+
+      // Strike price
+      ctx.fillStyle='#c8d4e8';
+      ctx.fillText('$'+d.strike.toFixed(2),colX,ry+12);
+      colX+=COL_W[1];
+
+      // GEX dollar value — colored
+      ctx.fillStyle=rowCol;
+      ctx.fillText(fmtT(d.gex),colX,ry+12);
+      colX+=COL_W[2];
+
+      // Nearest expiry MM/DD
+      const expShort=d.exp?d.exp.slice(5).replace('-','/'):'—';
+      ctx.fillStyle='#6b7a99';
+      ctx.fillText(expShort,colX,ry+12);
+    });
+  }
+}
 function dpHitTest(mouseX, mouseY){
   if(!S.dpTrades.length||!S.candles.length)return null;
   if(!drawDarkPool._candleMap||!drawDarkPool._candleMap.size)return null;
@@ -1644,13 +2328,119 @@ function setMAColor(key,color){const ma=S.maLines.find(m=>m.key===key);if(ma){ma
 
 function toggleDD(which){
   const btn=g('dd-'+which+'-btn'),panel=g('dd-'+which+'-panel');
+  if(!btn||!panel)return;
   const isOpen=panel.classList.contains('open');
-  ['ma','ind','pl','dp'].forEach(w=>{g('dd-'+w+'-panel').classList.remove('open');g('dd-'+w+'-btn').classList.remove('open')});
-  if(!isOpen){panel.classList.add('open');btn.classList.add('open')}
+  ['ma','ind','pl','dp','gex','layout'].forEach(w=>{const p=g('dd-'+w+'-panel'),b=g('dd-'+w+'-btn');if(p)p.classList.remove('open');if(b)b.classList.remove('open')});
+  if(!isOpen){
+    panel.classList.add('open');btn.classList.add('open');
+    const r=btn.getBoundingClientRect();
+    panel.style.top=(r.bottom+4)+'px';
+    if(which==='layout'){
+      panel.style.left='auto';
+      panel.style.right=(window.innerWidth-r.right)+'px';
+    } else {
+      panel.style.left=r.left+'px';
+      panel.style.right='auto';
+    }
+  }
 }
-document.addEventListener('click',e=>{if(!e.target.closest('.dd-wrap')&&!e.target.classList.contains('ma-input')){['ma','ind','pl','dp'].forEach(w=>{g('dd-'+w+'-panel').classList.remove('open');g('dd-'+w+'-btn').classList.remove('open')})}});
+document.addEventListener('click',e=>{if(!e.target.closest('.dd-wrap')&&!e.target.classList.contains('ma-input')){['ma','ind','pl','dp','gex','layout'].forEach(w=>{const p=g('dd-'+w+'-panel'),b=g('dd-'+w+'-btn');if(p)p.classList.remove('open');if(b)b.classList.remove('open')})}});
+// ── MULTI-CHART LAYOUT ────────────────────────────────────────────────────────
+let _currentLayout=1;
+const LAYOUT_TICKERS={
+  '2h':['SPY','QQQ'],
+  '2v':['SPY','QQQ'],
+  4:   ['SPY','QQQ','AAPL','TSLA'],
+  6:   ['SPY','QQQ','AAPL','TSLA','NVDA','MSFT'],
+};
+
+function setLayout(mode, el){
+  // Update checkmarks
+  document.querySelectorAll('.layout-opt').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+  _currentLayout=mode;
+
+  const grid=g('multi-grid');
+  const single=g('chart-wrap');
+  const subPanels=g('sub-panels');
+
+  if(mode===1){
+    // Single chart — show original chart-wrap, hide grid
+    grid.className='';
+    grid.style.display='none';
+    grid.innerHTML='';
+    single.style.display='';
+    subPanels.style.display='';
+    g('layout-icon').textContent='⊞';
+    schedRender();
+    return;
+  }
+
+  // Multi-chart — hide single, show grid
+  single.style.display='none';
+  subPanels.style.display='none';
+
+  // Set grid class
+  const classMap={'2h':'layout-2h','2v':'layout-2v',4:'layout-4',6:'layout-6'};
+  grid.className=classMap[mode]||'layout-2h';
+  grid.style.display='';
+
+  const icons={1:'⬜','2h':'⬜⬜','2v':'🟦',4:'⊞',6:'⊟'};
+  g('layout-icon').textContent=icons[mode]||'⊞';
+
+  const tickers=LAYOUT_TICKERS[mode]||['SPY','QQQ'];
+  const count=typeof mode==='number'?mode:2;
+
+  grid.innerHTML='';
+  for(let i=0;i<count;i++){
+    const ticker=tickers[i]||'SPY';
+    const pane=document.createElement('div');
+    pane.className='chart-pane';
+    pane.dataset.idx=i;
+
+    // Mini header with editable ticker
+    const hdr=document.createElement('div');
+    hdr.className='chart-pane-header';
+    hdr.innerHTML=`
+      <input class="chart-pane-ticker" value="${ticker}" title="Change ticker — press Enter"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();changePaneTicker(this)}"
+        onclick="event.stopPropagation()" onfocus="this.select()"/>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-left:2px">↵ to load</span>
+    `;
+    pane.appendChild(hdr);
+
+    // iframe — load same page with ticker param, strip bar1/bar2 via hash
+    const iframe=document.createElement('iframe');
+    // Pass ticker via URL param; the iframe page reads it and loads that ticker
+    const src=window.location.href.split('?')[0]+'?pane=1&ticker='+encodeURIComponent(ticker)+'&t='+Date.now();
+    iframe.src=src;
+    iframe.style.cssText='width:100%;height:calc(100% - 22px);margin-top:22px;border:none;display:block';
+    iframe.dataset.ticker=ticker;
+    pane.appendChild(iframe);
+    grid.appendChild(pane);
+  }
+
+  // Force grid height
+  const b1=g('bar1'),b2=g('bar2');
+  const usedH=(b1?b1.offsetHeight:60)+(b2?b2.offsetHeight:34);
+  grid.style.height=(window.innerHeight-usedH)+'px';
+}
+
+function changePaneTicker(input){
+  const ticker=input.value.trim().toUpperCase();
+  if(!ticker)return;
+  input.value=ticker;
+  const pane=input.closest('.chart-pane');
+  const iframe=pane?.querySelector('iframe');
+  if(iframe){
+    const src=window.location.href.split('?')[0]+'?pane=1&ticker='+encodeURIComponent(ticker)+'&t='+Date.now();
+    iframe.src=src;
+  }
+}
+
+// On iframe load — if this page is loaded as a pane, hide bar1/bar2 and load ticker from param
+
 function updateDDBadges(){
-  const maCt=S.maLines.filter(m=>m.active).length;
   const indCt=['vol','vwap','bb','macd','rsi','cci','mcdx','obv','ttm'].filter(k=>S.indicators[k]).length;
   const plCt=Object.values(S.priceLevels).filter(Boolean).length;
   const dpCt=Object.values(S.darkPool).filter(Boolean).length;
@@ -1785,11 +2575,9 @@ function wsSubscribe(ticker){
   if(_wsSubscribed)S.ws.send(JSON.stringify({action:'unsubscribe',params:`AM.${_wsSubscribed},T.${_wsSubscribed},Q.${_wsSubscribed}`}));
   _wsSubscribed=ticker;
   S.ws.send(JSON.stringify({action:'subscribe',params:`AM.${ticker},T.${ticker},Q.${ticker}`}));
-  // Update DP status to show live mode
-  const st=g('dp-status');
-  if(st&&st.textContent.indexOf('LIVE')<0){
-    st.innerHTML=(st.textContent?st.textContent+'<br>':'')+'<span style="color:#22c55e">● LIVE — prints auto-detecting</span>';
-  }
+  // Update DP badge to show live indicator
+  const dpBadge=g('dd-dp-badge');
+  if(dpBadge){dpBadge.style.background='#22c55e';dpBadge.classList.remove('hidden');}
 }
 function wsChangeSymbol(ticker){wsSubscribe(ticker)}
 
@@ -1828,11 +2616,14 @@ function dpLiveTrade(msg){
   const st=g('dp-status');
   if(st){
     const fmtD=v=>v>=1e9?'$'+(v/1e9).toFixed(1)+'B':v>=1e6?'$'+(v/1e6).toFixed(2)+'M':'$'+(v/1e3).toFixed(0)+'K';
-    st.innerHTML=`<span style="color:#22c55e">● LIVE ${S.ticker}</span>  ${total} prints<br>`+
+    st.innerHTML=`<span style="color:#22c55e">● LIVE</span>  ${total} prints  `+
       `<span style="color:#fbbf24">⭐${_dpLiveCount.golden}</span>  `+
       `<span style="color:#3b82f6">L${_dpLiveCount.large}</span>  `+
       `<span style="color:#9ca3af">M${_dpLiveCount.med}</span>  `+
       `<span style="color:#6b7a99">S${_dpLiveCount.small}</span>`;
+    // Update badge count
+    const dpB=g('dd-dp-badge');
+    if(dpB){dpB.textContent=total;dpB.classList.toggle('hidden',total===0);}
   }
 }
 function wsPush(msg){if(!S.candles.length)return;const last=S.candles[S.candles.length-1];if(last.t===msg.s){last.h=Math.max(last.h,msg.h);last.l=Math.min(last.l,msg.l);last.c=msg.c;last.v=(last.v||0)+(msg.av||msg.v||0)}else if(msg.s>last.t){S.candles.push({t:msg.s,o:msg.o,h:msg.h,l:msg.l,c:msg.c,v:msg.v||0,vw:msg.vw||null});if(S.candles.length>5000)S.candles.shift()}updatePriceDisplay();pulse();schedRender()}
@@ -1855,34 +2646,53 @@ async function initAuth(){
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 function fixLayout(){
-  // CSS handles layout — just trigger re-render on resize
+  // Force correct height every time — self-heals via renderMain
   schedRender();
 }
 
 function startApp(){
-  fixLayout();
-  window.addEventListener('resize',()=>{fixLayout();schedRender()});
-  new ResizeObserver(()=>{fixLayout();schedRender()}).observe(g('sub-panels'));
+  window.addEventListener('resize',schedRender);
+  new ResizeObserver(()=>schedRender()).observe(g('sub-panels'));
   initEvents();buildMAPanel();buildSubPanels();
   dpSetToday();
+  setTimeout(gexExpiryChange,100); // init GEX date preview after DOM ready
   updateClock();updateMktStatus();
   setInterval(updateClock,1000);setInterval(updateMktStatus,30000);
   setInterval(silentRefresh,30000);setInterval(loadIndexBar,60000);
   wsConnect();
   loadTicker('SPY');loadIndexBar();
+  // Start GEX auto-refresh loop — will activate once data is loaded
+  setTimeout(gexSetRefresh, 2000);
 }
 
 // LOGIN DISABLED FOR TESTING
 g('login-overlay').classList.add('hidden');
-// Use rAF to ensure DOM is fully laid out before starting
-requestAnimationFrame(()=>{
+// In pane mode hide bars so iframe is pure chart
+if(_isPaneMode){
+  const b1=g('bar1'),b2=g('bar2');
+  if(b1)b1.style.display='none';
+  if(b2)b2.style.display='none';
+}
+// Force chart height
+(function forceHeight(){
   const wrap=g('chart-wrap');
-  if(!wrap.clientHeight){
-    const used=(g('bar1')?.offsetHeight||60)+(g('bar2')?.offsetHeight||34);
-    wrap.style.height=(window.innerHeight-used)+'px';
+  function calcH(){
+    const sp=g('sub-panels');
+    const subH=sp?sp.offsetHeight:0;
+    if(_isPaneMode)return Math.max(200,window.innerHeight-subH);
+    const bar1=g('bar1'),bar2=g('bar2');
+    const barsH=(bar1?bar1.offsetHeight:60)+(bar2?bar2.offsetHeight:34);
+    return Math.max(200,window.innerHeight-barsH-subH);
   }
-  startApp();
-});
+  wrap.style.height=calcH()+'px';
+  wrap.style.flex='none';
+  requestAnimationFrame(()=>{wrap.style.height=calcH()+'px';});
+})();
+startApp();
+// In pane mode, override default ticker with the one from URL
+if(_isPaneMode){
+  setTimeout(()=>loadTicker(_paneTicker),400);
+}
 </script>
 </body>
 </html>
